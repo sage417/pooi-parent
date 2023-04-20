@@ -1,20 +1,12 @@
 package app.pooi.common.dynamicdatasource;
 
-import app.pooi.common.prop.SpringShardingTableConfigurationProperties;
-import com.baomidou.dynamic.datasource.ds.ItemDataSource;
 import com.baomidou.dynamic.datasource.provider.AbstractJdbcDataSourceProvider;
 import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DataSourceProperty;
 import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.hikari.HikariCpConfig;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shardingsphere.driver.api.yaml.YamlShardingSphereDataSourceFactory;
-import org.apache.shardingsphere.infra.yaml.engine.YamlEngine;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -25,10 +17,7 @@ import java.util.Map;
 @Slf4j
 class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
 
-    public final DataSourceProperty property;
-
-    @Resource
-    private SpringShardingTableConfigurationProperties shardingTableConfigurationProperties;
+    protected final DataSourceProperty property;
 
     public JdbcDynamicDataSourceProvider(DataSourceProperty property) {
         super(property.getDriverClassName(), property.getUrl(),
@@ -46,20 +35,14 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
         return this.loadDataSources(null);
     }
 
-    Map<String, DataSource> loadDataSources(String datasourceKey) {
-        // SPI加载
-//        try {
-//            Class.forName(property.getDriverClassName());
-//        } catch (ClassNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
+    protected Map<String, DataSource> loadDataSources(String datasourceKey) {
         var dataSourcePropertiesMap = new HashMap<String, DataSourceProperty>(8);
         // 数据库加载数据源信息
         try (Connection conn = DriverManager.getConnection(property.getUrl(),
                 property.getUsername(), property.getPassword());
              Statement stmt = conn.createStatement()
         ) {
-            String querySql = "select * from db_info";
+            String querySql = "select * from t_tenant_db_info";
             if (StringUtils.isNotBlank(datasourceKey)) {
                 querySql += "where db_code = '" + datasourceKey + "'";
             }
@@ -80,15 +63,6 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
             log.error("加载动态数据源信息失败", ex);
         }
         var dataSourceMap = super.createDataSourceMap(dataSourcePropertiesMap);
-        // 分表配置
-        var configurationPropertiesMap = MapUtils.emptyIfNull(shardingTableConfigurationProperties.getRootConfiguration());
-        // 存在则构造数据源
-        for (Map.Entry<String, DataSource> entry : dataSourceMap.entrySet()) {
-            if (!configurationPropertiesMap.containsKey(entry.getKey())) {
-                continue;
-            }
-            entry.setValue(buildShardingDataSource(configurationPropertiesMap.get(entry.getKey()), entry.getValue()));
-        }
         return dataSourceMap;
     }
 
@@ -110,14 +84,4 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
         return dataSourceProperty;
     }
 
-    @SneakyThrows
-    private static DataSource buildShardingDataSource(SpringShardingTableConfigurationProperties.SpringYamlRootConfigurationProperties rootConfigurationProperties,
-                                                      DataSource dataSource) {
-        if (dataSource instanceof ItemDataSource) {
-            dataSource = ((ItemDataSource) dataSource).getDataSource();
-        }
-        var yamlRootConfiguration = SpringShardingTableConfigurationProperties.convertToYamlRootConfiguration(rootConfigurationProperties);
-        var bytes = YamlEngine.marshal(yamlRootConfiguration).getBytes(StandardCharsets.UTF_8);
-        return YamlShardingSphereDataSourceFactory.createDataSource(dataSource, bytes);
-    }
 }

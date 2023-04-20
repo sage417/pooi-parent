@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.util.*;
 
 @Data
-@ConfigurationProperties(value = "sharding")
+@ConfigurationProperties(value = "common.sharding")
 public class SpringShardingTableConfigurationProperties {
 
     private Map<String, SpringYamlRootConfigurationProperties> rootConfiguration;

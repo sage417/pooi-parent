@@ -23,7 +23,6 @@ class DynamicDataSourceMappingProvider implements InitializingBean {
 
     public final DataSourceProperty property;
 
-
     public DynamicDataSourceMappingProvider(DataSourceProperty property) {
         this.property = property;
     }
@@ -54,17 +53,17 @@ class DynamicDataSourceMappingProvider implements InitializingBean {
                 property.getUsername(), property.getPassword());
              Statement stmt = conn.createStatement()
         ) {
-            String querySql = "select * from db_mapping where type = 'db_master'";
+            String querySql = "select * from t_tenant_db_mapping";
             var rs = stmt.executeQuery(querySql);
 
             while (rs.next()) {
-                var applicationCode = rs.getString("application_code");
+                var applicationCode = rs.getString("tenant_code");
                 var dbCode = rs.getString("db_code");
-                var module = rs.getString("module");
-                mapping.putIfAbsent(applicationCode, dbCode);
-                if (StringUtils.equalsIgnoreCase(module, MODULE)) {
+//                var module = rs.getString("module");
+//                mapping.putIfAbsent(applicationCode, dbCode);
+//                if (StringUtils.equalsIgnoreCase(module, MODULE)) {
                     mapping.put(applicationCode, dbCode);
-                }
+//                }
             }
         } catch (Exception ex) {
             log.error("加载动态数据源关系失败", ex);
