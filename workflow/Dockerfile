@@ -3,14 +3,14 @@ FROM maven:3.8-openjdk-17-slim AS build
 WORKDIR /code
 
 RUN mkdir -p /root/.m2
-COPY settings.xml /root/.m2/settings.xml
-COPY pom.xml /code/pom.xml
+COPY workflow/settings.xml /root/.m2/settings.xml
+COPY workflow/pom.xml /code/pom.xml
 RUN mvn --batch-mode dependency:resolve
 RUN mvn --batch-mode verify
 
 # Adding source, compile and package into a fat jar
 COPY ["src/main", "/code/src/main"]
-RUN mvn --batch-mode package
+RUN mvn --batch-mode -pl workflow -am package 
 
 FROM openjdk:17-slim-buster
 
