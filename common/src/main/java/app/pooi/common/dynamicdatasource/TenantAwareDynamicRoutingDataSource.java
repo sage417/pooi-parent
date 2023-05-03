@@ -28,16 +28,21 @@ class TenantAwareDynamicRoutingDataSource extends DynamicRoutingDataSource {
         var dataSourceKey = StringUtils.defaultIfBlank(DynamicDataSourceContextHolder.peek(),
                 mappingProvider.getMappingValue(applicationInfoHolder.getApplicationCode()));
 
-        if (StringUtils.isNotBlank(dataSourceKey) && !getDataSources().containsKey(dataSourceKey)) {
-            loadDataSource(dataSourceKey);
+        if (missKeyTryDataSource(dataSourceKey)) {
+            synchronized (this) {
+                if (missKeyTryDataSource(dataSourceKey)) {
+                    loadDataSource(dataSourceKey);
+                }
+            }
         }
         return getDataSource(dataSourceKey);
     }
 
-    private synchronized void loadDataSource(String key) {
-        if (StringUtils.isBlank(key) || getDataSources().containsKey(key)) {
-            return;
-        }
+    private boolean missKeyTryDataSource(String dataSourceKey) {
+        return StringUtils.isNotBlank(dataSourceKey) && !getDataSources().containsKey(dataSourceKey);
+    }
+
+    private void loadDataSource(String key) {
         var dataSourceProvider = providers.stream().filter(JdbcDynamicDataSourceProvider.class::isInstance)
                 .findFirst();
         if (dataSourceProvider.isEmpty()) {

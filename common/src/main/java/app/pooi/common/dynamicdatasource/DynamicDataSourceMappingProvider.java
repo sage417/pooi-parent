@@ -35,6 +35,7 @@ class DynamicDataSourceMappingProvider implements InitializingBean {
 
     public String getMappingValue(String key) {
         if (StringUtils.isBlank(key)) {
+            log.warn("dsCode is blank, return default ds");
             return null;
         }
         if (!mapping.containsKey(key)) {
