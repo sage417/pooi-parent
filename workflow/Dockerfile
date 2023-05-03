@@ -1,4 +1,4 @@
-FROM maven:3.5-jdk-17-alpine AS build
+FROM maven:3.8-openjdk-17-slim AS build
 
 WORKDIR /code
 
@@ -12,7 +12,7 @@ RUN mvn --batch-mode verify
 COPY ["src/main", "/code/src/main"]
 RUN mvn --batch-mode package
 
-FROM openjdk:17-jre-alpine
+FROM openjdk:17-slim-buster
 
 COPY --from=build /code/target/package.jar /package.jar
 
