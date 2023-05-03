@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    dynamic:
+      primary: core
+      strict: true
+      datasource:
+        core:
+          url: jdbc:mysql://raspberrypi-1:30006/pooi_flow_core
+          username: root
+          password: password
