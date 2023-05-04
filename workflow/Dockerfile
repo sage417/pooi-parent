@@ -13,7 +13,7 @@ RUN mvn --batch-mode verify
 
 # Adding source, compile and package into a fat jar
 # COPY ["src/main", "/code/src/main"]
-RUN mvn --batch-mode -pl workflow -am package 
+RUN mvn --batch-mode -pl workflow -amd package 
 
 FROM openjdk:17-slim-buster
 
