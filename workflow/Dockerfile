@@ -17,6 +17,6 @@ RUN mvn -B -q -DskipTests=true package -pl workflow -am
 
 FROM openjdk:17-slim-buster
 
-COPY --from=build /code/target/package.jar /package.jar
+COPY --from=build /code/workflow/target/package.jar /package.jar
 
 CMD ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-jar", "/package.jar"]
