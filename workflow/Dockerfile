@@ -3,9 +3,8 @@ FROM maven:3.8-openjdk-17-slim AS build
 WORKDIR /code
 
 RUN mkdir -p /root/.m2
-RUN ls -l
-COPY settings.xml /root/.m2/settings.xml
-COPY pom.xml /code/pom.xml
+COPY workflow/settings.xml /root/.m2/settings.xml
+COPY workflow/pom.xml /code/pom.xml
 RUN mvn --batch-mode dependency:resolve
 RUN mvn --batch-mode verify
 
