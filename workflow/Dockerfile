@@ -8,8 +8,8 @@ COPY pooi-parent/workflow/settings.xml /root/.m2/settings.xml
 COPY ["pooi-parent", "/code"]
 
 # COPY workflow/pom.xml /code/pom.xml
-RUN mvn --batch-mode dependency:resolve
-RUN mvn --batch-mode verify
+# RUN mvn --batch-mode dependency:resolve
+# RUN mvn --batch-mode verify
 
 # Adding source, compile and package into a fat jar
 # COPY ["src/main", "/code/src/main"]
