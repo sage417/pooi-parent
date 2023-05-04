@@ -13,7 +13,7 @@ COPY ["pooi-parent", "/code"]
 
 # Adding source, compile and package into a fat jar
 # COPY ["src/main", "/code/src/main"]
-RUN mvn -DskipTests=true package -pl workflow -am
+RUN mvn -B -q -DskipTests=true package -pl workflow -am
 
 FROM openjdk:17-slim-buster
 
