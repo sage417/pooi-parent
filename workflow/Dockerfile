@@ -19,4 +19,4 @@ FROM openjdk:17-slim-buster
 
 COPY --from=build /code/workflow/target/package.jar /package.jar
 
-CMD ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-jar", "/package.jar"]
+CMD ["java", "-jar", "/package.jar"]
