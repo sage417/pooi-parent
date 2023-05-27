@@ -1,3 +1,13 @@
+FROM maven:3.8-openjdk-17-slim AS deps
+
+WORKDIR /opt/app
+
+COPY .pom.xml .
+COPY ["common/pom.xml","common/pom.xml","workflow/pom.xml","workflow/pom.xml"]
+
+RUN mvn -B dependency:resolve
+RUN mvn -B verify
+
 FROM maven:3.8-openjdk-17-slim AS build
 
 WORKDIR /code
@@ -18,7 +28,5 @@ COPY ["pooi-parent", "/code"]
 RUN mvn -B -DskipTests=true package -pl workflow -am
 
 FROM openjdk:17-slim-buster
-
 COPY --from=build /code/workflow/target/package.jar /package.jar
-
 CMD ["java", "-jar", "/package.jar"]
