@@ -24,7 +24,7 @@ COPY common/src common/src
 COPY model/src model/src
 COPY workflow/src workflow/src
 
-RUN mvn -B -e -DskipTests=true package -pl workflow -am
+RUN mvn -B -e -q -DskipTests=true package -pl workflow -am
 
 FROM openjdk:17-slim-buster
 COPY --from=build /code/workflow/target/package.jar /package.jar
