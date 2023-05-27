@@ -9,7 +9,7 @@ COPY common/pom.xml common/pom.xml
 COPY model/pom.xml model/pom.xml
 COPY workflow/pom.xml workflow/pom.xml
 
-RUN mvn -B dependency:go-offline
+RUN mvn -B -q dependency:go-offline
 
 FROM maven:3.8-openjdk-17-slim AS build
 
