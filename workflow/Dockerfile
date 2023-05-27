@@ -4,7 +4,8 @@ WORKDIR /opt/app
 
 COPY workflow/settings.xml /root/.m2/settings.xml
 COPY pom.xml .
-COPY ["common/pom.xml","common/pom.xml","workflow/pom.xml","workflow/pom.xml"]
+COPY common/pom.xml .
+COPY workflow/pom.xml workflow/pom.xml
 
 RUN mvn -B dependency:resolve
 RUN mvn -B verify
