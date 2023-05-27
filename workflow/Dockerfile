@@ -19,10 +19,10 @@ RUN mkdir -p /root/.m2
 
 COPY --from=deps /root/.m2 /root/.m2
 
-COPY --from=deps /opt/app/ /opt/app
-COPY common/src /opt/app/common/src
-COPY model/src /opt/app/model/src
-COPY workflow/src /opt/app/workflow/src
+COPY --from=deps /opt/app/ .
+COPY common/src common/src
+COPY model/src model/src
+COPY workflow/src workflow/src
 
 RUN mvn -B -o -DskipTests=true package -pl workflow -am
 
