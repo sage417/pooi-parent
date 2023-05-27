@@ -16,19 +16,15 @@ FROM maven:3.8-openjdk-17-slim AS build
 WORKDIR /code
 
 RUN mkdir -p /root/.m2
-COPY workflow/settings.xml /root/.m2/settings.xml
 
-COPY ["pooi-parent", "/code"]
+COPY --from=deps /root/.m2 /root/.m2
 
-# COPY workflow/pom.xml /code/pom.xml
-# RUN mvn --batch-mode dependency:resolve
-# RUN mvn --batch-mode verify
+COPY --from=deps /opt/app/ /opt/app
+COPY common/src /opt/app/common/src
+COPY model/src /opt/app/model/src
+COPY workflow/src /opt/app/workflow/src
 
-# Adding source, compile and package into a fat jar
-# COPY ["src/main", "/code/src/main"]
-# RUN mvn -B -q dependency:resolve
-# RUN mvn -B -q verify
-RUN mvn -B -DskipTests=true package -pl workflow -am
+RUN mvn -B -o -DskipTests=true package -pl workflow -am
 
 FROM openjdk:17-slim-buster
 COPY --from=build /code/workflow/target/package.jar /package.jar
