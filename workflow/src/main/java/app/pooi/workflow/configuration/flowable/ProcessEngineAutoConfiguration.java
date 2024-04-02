@@ -13,6 +13,7 @@
 package app.pooi.workflow.configuration.flowable;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.flowable.common.engine.api.async.AsyncTaskExecutor;
 import org.flowable.common.engine.api.scope.ScopeTypes;
 import org.flowable.common.engine.impl.cfg.IdGenerator;
 import org.flowable.common.engine.impl.cfg.multitenant.TenantInfoHolder;
@@ -53,6 +54,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -66,26 +68,26 @@ import java.util.List;
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProcessEngine
 @EnableConfigurationProperties({
-    FlowableAutoDeploymentProperties.class,
-    FlowableProperties.class,
-    FlowableMailProperties.class,
-    FlowableHttpProperties.class,
-    FlowableProcessProperties.class,
-    FlowableAppProperties.class,
-    FlowableIdmProperties.class,
-    FlowableEventRegistryProperties.class
+        FlowableAutoDeploymentProperties.class,
+        FlowableProperties.class,
+        FlowableMailProperties.class,
+        FlowableHttpProperties.class,
+        FlowableProcessProperties.class,
+        FlowableAppProperties.class,
+        FlowableIdmProperties.class,
+        FlowableEventRegistryProperties.class
 })
 @AutoConfigureAfter(value = {
-    FlowableJpaAutoConfiguration.class,
-    AppEngineAutoConfiguration.class,
+        FlowableJpaAutoConfiguration.class,
+        AppEngineAutoConfiguration.class,
 }, name = {
-    "org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration"
+        "org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration"
 })
 @AutoConfigureBefore({
-    AppEngineServicesAutoConfiguration.class,
+        AppEngineServicesAutoConfiguration.class,
 })
 @Import({
-    FlowableJobConfiguration.class
+        FlowableJobConfiguration.class
 })
 public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.ProcessEngineAutoConfiguration {
 
@@ -99,17 +101,18 @@ public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.Pro
 
     @Bean
     public SpringProcessEngineConfiguration springProcessEngineConfiguration(DataSource dataSource, PlatformTransactionManager platformTransactionManager,
-            ObjectProvider<ObjectMapper> objectMapperProvider,
-            @Process ObjectProvider<IdGenerator> processIdGenerator,
-            ObjectProvider<IdGenerator> globalIdGenerator,
-            @ProcessAsync ObjectProvider<AsyncExecutor> asyncExecutorProvider,
-            @Qualifier("applicationTaskExecutor") ObjectProvider<AsyncListenableTaskExecutor> applicationTaskExecutorProvider,
-            @ProcessAsyncHistory ObjectProvider<AsyncExecutor> asyncHistoryExecutorProvider,
-            ObjectProvider<AsyncListenableTaskExecutor> taskExecutor,
-            @Process ObjectProvider<AsyncListenableTaskExecutor> processTaskExecutor,
-            ObjectProvider<FlowableHttpClient> flowableHttpClient,
-            ObjectProvider<List<AutoDeploymentStrategy<ProcessEngine>>> processEngineAutoDeploymentStrategies, ObjectProvider<TenantInfoHolder> tenantInfoHolder
-    ) throws IOException {
+                                                                             ObjectProvider<ObjectMapper> objectMapperProvider,
+                                                                             @Process ObjectProvider<IdGenerator> processIdGenerator,
+                                                                             ObjectProvider<IdGenerator> globalIdGenerator,
+                                                                             @ProcessAsync ObjectProvider<AsyncExecutor> asyncExecutorProvider,
+                                                                             @Qualifier("applicationTaskExecutor") ObjectProvider<AsyncListenableTaskExecutor> applicationTaskExecutorProvider,
+                                                                             @ProcessAsyncHistory ObjectProvider<AsyncExecutor> asyncHistoryExecutorProvider,
+                                                                             ObjectProvider<AsyncListenableTaskExecutor> taskExecutor,
+                                                                             @Process ObjectProvider<AsyncListenableTaskExecutor> processTaskExecutor,
+                                                                             @Qualifier("flowableAsyncTaskInvokerTaskExecutor") ObjectProvider<AsyncTaskExecutor> asyncTaskInvokerTaskExecutor,
+                                                                             ObjectProvider<FlowableHttpClient> flowableHttpClient,
+                                                                             ObjectProvider<List<AutoDeploymentStrategy<ProcessEngine>>> processEngineAutoDeploymentStrategies,
+                                                                             ObjectProvider<TenantInfoHolder> tenantInfoHolder) throws IOException {
 
         SpringProcessEngineConfiguration conf = tenantInfoHolder.getIfUnique() != null ?
                 new MultiSchemaMultiTenantProcessEngineConfiguration(tenantInfoHolder.getIfUnique()) :
@@ -117,9 +120,9 @@ public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.Pro
 
 
         List<Resource> resources = this.discoverDeploymentResources(
-            flowableProperties.getProcessDefinitionLocationPrefix(),
-            flowableProperties.getProcessDefinitionLocationSuffixes(),
-            flowableProperties.isCheckProcessDefinitions()
+                flowableProperties.getProcessDefinitionLocationPrefix(),
+                flowableProperties.getProcessDefinitionLocationSuffixes(),
+                flowableProperties.isCheckProcessDefinitions()
         );
 
         if (resources != null && !resources.isEmpty()) {
@@ -149,6 +152,11 @@ public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.Pro
             conf.setAsyncHistoryEnabled(true);
             conf.setAsyncHistoryExecutor(springAsyncHistoryExecutor);
         }
+
+//        AsyncTaskExecutor taskInvokerTaskExecutor = asyncTaskInvokerTaskExecutor.getIfAvailable();
+//        if (taskInvokerTaskExecutor != null) {
+//            conf.setAsyncTaskInvokerTaskExecutor(taskInvokerTaskExecutor);
+//        }
 
         ObjectMapper objectMapper = objectMapperProvider.getIfAvailable();
         if (objectMapper != null) {
@@ -188,6 +196,8 @@ public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.Pro
         conf.setProcessDefinitionCacheLimit(processProperties.getDefinitionCacheLimit());
         conf.setEnableSafeBpmnXml(processProperties.isEnableSafeXml());
         conf.setEventRegistryStartProcessInstanceAsync(processProperties.isEventRegistryStartProcessInstanceAsync());
+        conf.setEventRegistryUniqueProcessInstanceCheckWithLock(processProperties.isEventRegistryUniqueProcessInstanceCheckWithLock());
+        conf.setEventRegistryUniqueProcessInstanceStartLockTime(processProperties.getEventRegistryUniqueProcessInstanceStartLockTime());
 
         conf.setHistoryLevel(flowableProperties.getHistoryLevel());
 
@@ -201,7 +211,6 @@ public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.Pro
         conf.setHistoryCleaningTimeCycleConfig(flowableProperties.getHistoryCleaningCycle());
         conf.setCleanInstancesEndedAfter(flowableProperties.getHistoryCleaningAfter());
         conf.setCleanInstancesBatchSize(flowableProperties.getHistoryCleaningBatchSize());
-        conf.setCleanInstancesSequentially(flowableProperties.isHistoryCleaningSequential());
 
         IdGenerator idGenerator = getIfAvailable(processIdGenerator, globalIdGenerator);
         if (idGenerator == null) {
