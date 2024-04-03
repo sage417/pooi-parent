@@ -5,6 +5,8 @@ spring:
       strict: true
       datasource:
         core:
-          url: jdbc:mysql://raspberrypi-1:30006/pooi_flow_core
-          username: root
-          password: password
+          url: jdbc:h2:mem:pooi-workflow-core;DB_CLOSE_DELAY=-1;MODE=MySQL
+          username: sa
+          password:
+          init:
+            schema: classpath*:sql/init.sql
