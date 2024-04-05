@@ -30,25 +30,26 @@ class DynamicDataSourceMappingProvider implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        reload();
+        // 如果使用h2数据库此处数据库还未初始化完成，忽略报错
+        reload(true);
     }
 
     public String getMappingValue(String key) {
         if (StringUtils.isBlank(key)) {
-            log.warn("dsCode is blank, return default ds");
+            log.warn("dbCode is blank, using default datasource");
             return null;
         }
         if (!mapping.containsKey(key)) {
             synchronized (this) {
                 if (!mapping.containsKey(key)) {
-                    reload();
+                    reload(false);
                 }
             }
         }
         return mapping.get(key);
     }
 
-    private synchronized void reload() {
+    private synchronized void reload(boolean init) {
         // 数据库加载数据源信息
         try (Connection conn = DriverManager.getConnection(property.getUrl(),
                 property.getUsername(), property.getPassword());
@@ -63,11 +64,13 @@ class DynamicDataSourceMappingProvider implements InitializingBean {
 //                var module = rs.getString("module");
 //                mapping.putIfAbsent(applicationCode, dbCode);
 //                if (StringUtils.equalsIgnoreCase(module, MODULE)) {
-                    mapping.put(applicationCode, dbCode);
+                mapping.put(applicationCode, dbCode);
 //                }
             }
         } catch (Exception ex) {
-            log.error("加载动态数据源关系失败", ex);
+            if (!init) {
+                log.error("加载动态数据源关系失败", ex);
+            }
         }
     }
 }

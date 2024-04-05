@@ -10,3 +10,4 @@ spring:
           password:
           init:
             schema: classpath*:sql/init.sql
+            data: classpath*:sql/data.sql
