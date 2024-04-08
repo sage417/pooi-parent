@@ -1,10 +1,12 @@
 package app.pooi.workflow.configuration.flowable;
 
+import lombok.Getter;
 import org.flowable.common.engine.impl.cfg.multitenant.TenantInfoHolder;
 import org.flowable.common.engine.impl.interceptor.Command;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
 import org.flowable.common.engine.impl.interceptor.CommandInterceptor;
 import org.flowable.common.engine.impl.persistence.StrongUuidGenerator;
+import org.flowable.common.spring.AutoDeploymentStrategy;
 import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.impl.SchemaOperationProcessEngineClose;
@@ -46,7 +48,7 @@ import java.util.concurrent.ExecutorService;
  * @author Joram Barrez
  */
 class MultiSchemaMultiTenantProcessEngineConfiguration extends SpringProcessEngineConfiguration {
-
+    @Getter
     protected TenantInfoHolder tenantInfoHolder;
     protected boolean booted;
 
@@ -171,6 +173,19 @@ class MultiSchemaMultiTenantProcessEngineConfiguration extends SpringProcessEngi
         };
     }
 
+    @Override
+    protected void autoDeployResources(ProcessEngine processEngine) {
+        if (this.deploymentResources != null && this.deploymentResources.length > 0) {
+
+            for (String tenantId : this.tenantInfoHolder.getAllTenants()) {
+                this.tenantInfoHolder.setCurrentTenantId(tenantId);
+                AutoDeploymentStrategy<ProcessEngine> strategy = this.getAutoDeploymentStrategy(this.deploymentMode);
+                strategy.deployResources(this.deploymentName, this.deploymentResources, processEngine);
+                this.tenantInfoHolder.clearCurrentTenantId();
+            }
+        }
+    }
+
     public Command<Void> getProcessEngineCloseCommand() {
         return new Command<Void>() {
             @Override
@@ -181,7 +196,6 @@ class MultiSchemaMultiTenantProcessEngineConfiguration extends SpringProcessEngi
         };
     }
 
-    public TenantInfoHolder getTenantInfoHolder() {
-        return tenantInfoHolder;
-    }
+
+
 }
