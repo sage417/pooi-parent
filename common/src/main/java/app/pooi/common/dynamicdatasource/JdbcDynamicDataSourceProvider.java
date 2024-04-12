@@ -44,7 +44,7 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
         ) {
             String querySql = "select * from t_tenant_db_info";
             if (StringUtils.isNotBlank(datasourceKey)) {
-                querySql += "where db_code = '" + datasourceKey + "'";
+                querySql += " where db_code = '" + datasourceKey + "'";
             }
             var rs = stmt.executeQuery(querySql);
 
@@ -62,7 +62,12 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
         } catch (Exception ex) {
             log.error("加载动态数据源信息失败", ex);
         }
-        var dataSourceMap = super.createDataSourceMap(dataSourcePropertiesMap);
+        Map<String, DataSource> dataSourceMap = Map.of();
+        try {
+            dataSourceMap = super.createDataSourceMap(dataSourcePropertiesMap);
+        } catch (Exception ex) {
+            log.warn("创建数据源失败", ex);
+        }
         return dataSourceMap;
     }
 
@@ -77,6 +82,7 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
         var hikariCpConfig = new HikariCpConfig();
         hikariCpConfig.setMinIdle(0);
         hikariCpConfig.setMaxPoolSize(50);
+        hikariCpConfig.setConnectionTimeout(Duration.ofMillis(600).toMillis());
         hikariCpConfig.setIdleTimeout(Duration.ofMinutes(5).toMillis());
         hikariCpConfig.setMaxLifetime(Duration.ofMinutes(10).toMillis());
 
