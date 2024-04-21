@@ -125,9 +125,9 @@ class MultiSchemaMultiTenantProcessEngineConfiguration extends SpringProcessEngi
         }
 
         // Start async executor
-        if (asyncExecutor != null && originalIsAutoActivateAsyncExecutor) {
+//        if (asyncExecutor != null && originalIsAutoActivateAsyncExecutor) {
             asyncExecutor.start();
-        }
+//        }
 
         booted = true;
         return processEngine;

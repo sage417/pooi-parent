@@ -54,7 +54,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -153,10 +152,10 @@ public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.Pro
             conf.setAsyncHistoryExecutor(springAsyncHistoryExecutor);
         }
 
-//        AsyncTaskExecutor taskInvokerTaskExecutor = asyncTaskInvokerTaskExecutor.getIfAvailable();
-//        if (taskInvokerTaskExecutor != null) {
-//            conf.setAsyncTaskInvokerTaskExecutor(taskInvokerTaskExecutor);
-//        }
+        AsyncTaskExecutor taskInvokerTaskExecutor = asyncTaskInvokerTaskExecutor.getIfAvailable();
+        if (taskInvokerTaskExecutor != null) {
+            conf.setAsyncTaskInvokerTaskExecutor(taskInvokerTaskExecutor);
+        }
 
         ObjectMapper objectMapper = objectMapperProvider.getIfAvailable();
         if (objectMapper != null) {
