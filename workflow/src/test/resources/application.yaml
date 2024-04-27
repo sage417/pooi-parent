@@ -1,0 +1,19 @@
+spring.datasource.dynamic:
+  primary: core
+  strict: true
+  datasource:
+    core:
+      url: jdbc:h2:mem:pooi-workflow-core;DB_CLOSE_DELAY=-1;MODE=MySQL
+      username: sa
+      password:
+      init:
+        schema: classpath*:sql/init.sql
+        data: classpath*:sql/data.sql
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+spring.data.redis:
+  host: localhost
+  port: 6370
