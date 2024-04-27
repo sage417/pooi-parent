@@ -1,4 +1,4 @@
-package app.pooi.workflow.repository.tenant.domain;
+package app.pooi.workflow.repository.domain.tenant;
 
 
 import app.pooi.workflow.repository.tenant.TenantInfoDO;
