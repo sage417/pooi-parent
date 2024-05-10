@@ -1,9 +1,6 @@
 package app.pooi.workflow;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
 import app.pooi.workflow.conf.TestRedisConfiguration;
 import org.apache.commons.lang3.RandomUtils;
 import org.flowable.engine.RuntimeService;
@@ -19,7 +16,12 @@ import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.HashMap;
+import java.util.Map;
+
+import static app.pooi.workflow.TenantInfoHolderExtension.TENANT_APP_1;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(TenantInfoHolderExtension.class)
 @ExtendWith(FlowableSpringExtension.class)
@@ -33,12 +35,12 @@ class ArticleWorkflowIntegrationTest {
     private RedissonClient redissonClient;
 
     @Test
-    @Deployment(resources = { "processes/article-workflow.bpmn20.xml" })
+    @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
     void articleApprovalTest() {
         Map<String, Object> variables = new HashMap<String, Object>();
         variables.put("author", "test@baeldung.com");
         variables.put("url", "http://baeldung.com/dummy");
-        runtimeService.startProcessInstanceByKey("articleReview", variables);
+        runtimeService.startProcessInstanceByKeyAndTenantId("articleReview", variables, TENANT_APP_1);
         Task task = taskService.createTaskQuery()
                 .singleResult();
         assertEquals("Review the submitted tutorial", task.getName());

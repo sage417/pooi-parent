@@ -13,6 +13,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @NoArgsConstructor
 public class TenantInfoHolderExtension implements BeforeEachCallback, AfterEachCallback {
 
+    public static final String TENANT_APP_1 = "app1";
+
     @Override
     public void afterEach(ExtensionContext extensionContext) throws Exception {
         TenantInfoHolder tenantInfoHolder = createTenantInfoHolder(extensionContext);
@@ -22,7 +24,7 @@ public class TenantInfoHolderExtension implements BeforeEachCallback, AfterEachC
     @Override
     public void beforeEach(ExtensionContext extensionContext) throws Exception {
         TenantInfoHolder tenantInfoHolder = createTenantInfoHolder(extensionContext);
-        tenantInfoHolder.setCurrentTenantId("app1");
+        tenantInfoHolder.setCurrentTenantId(TENANT_APP_1);
     }
 
     protected TenantInfoHolder createTenantInfoHolder(ExtensionContext context) {
