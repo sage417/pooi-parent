@@ -1,13 +1,21 @@
 package app.pooi.workflow.util;
 
+import app.pooi.common.util.CollectorsUtil;
 import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
+import org.flowable.common.engine.impl.interceptor.CommandContext;
+import org.flowable.common.engine.impl.persistence.cache.EntityCache;
+import org.flowable.engine.impl.persistence.entity.ActivityInstanceEntity;
+import org.flowable.engine.impl.util.CommandContextUtil;
+import org.flowable.engine.runtime.ActivityInstance;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -190,4 +198,28 @@ public class BpmnModelUtil {
     }
 
 
+    public static <T> T findPreFlowElement(CommandContext commandContext, FlowNode currentFlowNode, Class<T> elementType) {
+        EntityCache entityCache = CommandContextUtil.getEntityCache(commandContext);
+
+        List<ActivityInstanceEntity> activityInstanceEntities = entityCache.findInCache(ActivityInstanceEntity.class);
+        Map<String, ActivityInstanceEntity> sequenceFlowMap = activityInstanceEntities.stream()
+                .filter(e -> e.getActivityType().equals(BpmnXMLConstants.ELEMENT_SEQUENCE_FLOW))
+                .collect(Collectors.toMap(ActivityInstance::getActivityId, Function.identity(), CollectorsUtil.useFirst()));
+
+        Set<SequenceFlow> incomingElements = currentFlowNode.getIncomingFlows().stream()
+                .filter(seq -> sequenceFlowMap.containsKey(seq.getId()))
+                .collect(Collectors.toSet());
+
+        if (incomingElements.size() != 1) {
+            return null;
+        }
+        SequenceFlow sequenceFlow = incomingElements.iterator().next();
+        if (!(sequenceFlow.getTargetFlowElement() instanceof FlowNode)) {
+            return null;
+        }
+        if (elementType.equals(sequenceFlow.getTargetFlowElement().getClass())) {
+            return (T) sequenceFlow.getTargetFlowElement();
+        }
+        return findPreFlowElement(commandContext, ((FlowNode) sequenceFlow.getTargetFlowElement()), elementType);
+    }
 }
