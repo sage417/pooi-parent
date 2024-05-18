@@ -230,6 +230,12 @@ public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.Pro
         deploymentStrategies.add(new ResourceParentFolderAutoDeploymentStrategy(deploymentProperties));
         conf.setDeploymentStrategies(deploymentStrategies);
 
+        if (tenantInfoHolder.getIfAvailable() != null) {
+            MultiTenantDefaultAutoDeploymentStrategy multiTenantDefaultAutoDeploymentStrategy = new MultiTenantDefaultAutoDeploymentStrategy();
+            deploymentStrategies.add(multiTenantDefaultAutoDeploymentStrategy);
+            conf.setDeploymentMode(multiTenantDefaultAutoDeploymentStrategy.getDeploymentMode());
+        }
+
         return conf;
     }
 
