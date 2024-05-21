@@ -18,6 +18,12 @@
         <java.version>21</java.version>
     </properties>
     <dependencies>
+
+        <dependency>
+            <groupId>org.dromara.dynamictp</groupId>
+            <artifactId>dynamic-tp-spring-boot-starter-common</artifactId>
+            <version>1.1.7</version>
+        </dependency>
         
         <dependency>
             <groupId>org.flowable</groupId>
