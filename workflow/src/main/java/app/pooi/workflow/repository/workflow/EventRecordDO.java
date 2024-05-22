@@ -20,6 +20,8 @@ public class EventRecordDO {
 
     private String tenantId;
 
+    private String processDefinitionId;
+
     private String processInstanceId;
 
     private String subjectId;
