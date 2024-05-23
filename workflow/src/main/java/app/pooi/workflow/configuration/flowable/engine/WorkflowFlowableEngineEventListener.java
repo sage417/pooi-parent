@@ -2,7 +2,6 @@ package app.pooi.workflow.configuration.flowable.engine;
 
 import app.pooi.workflow.constant.EventTypeEnum;
 import app.pooi.workflow.repository.workflow.EventRecordDO;
-import app.pooi.workflow.repository.workflow.EventRecordRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Setter;
@@ -10,6 +9,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEntityEvent;
 import org.flowable.common.engine.api.delegate.event.FlowableEventType;
+import org.flowable.common.engine.impl.persistence.StrongUuidGenerator;
 import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
 import org.flowable.engine.delegate.event.FlowableActivityEvent;
 import org.flowable.engine.delegate.event.FlowableEntityWithVariablesEvent;
@@ -19,7 +19,6 @@ import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import javax.annotation.Resource;
 import java.util.Map;
 
 @Slf4j
@@ -27,8 +26,7 @@ import java.util.Map;
 public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineEventListener {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    @Resource
-    private EventRecordRepository eventRecordRepository;
+    private final StrongUuidGenerator uuidGenerator = new StrongUuidGenerator();
 
     @SneakyThrows
     @Override
@@ -37,15 +35,13 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
 
         TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), event.getActivityId(), event.getActivityType(), event.getType());
-            EventRecordDO eventRecordDO = new EventRecordDO().setEventId("")
+            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
                     .setEventType(EventTypeEnum.ACTIVITY_STARTED)
                     .setTenantId(executionEntity.getTenantId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
                     .setProcessInstanceId(event.getProcessInstanceId())
                     .setSubjectId(event.getActivityId())
                     .setEvent(null);
-            eventRecordRepository.save(eventRecordDO);
-
         }));
     }
 
@@ -56,14 +52,13 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
 
         TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), event.getActivityId(), event.getActivityType(), event.getType());
-            EventRecordDO eventRecordDO = new EventRecordDO().setEventId("")
+            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
                     .setEventType(EventTypeEnum.ACTIVITY_COMPLETED)
                     .setTenantId(executionEntity.getTenantId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
                     .setProcessInstanceId(event.getProcessInstanceId())
                     .setSubjectId(event.getActivityId())
                     .setEvent(null);
-            eventRecordRepository.save(eventRecordDO);
         }));
 
     }
@@ -77,14 +72,13 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
 
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), taskEntity.getTaskDefinitionKey(), taskEntity.getId(), event.getType());
 
-            EventRecordDO eventRecordDO = new EventRecordDO().setEventId("")
+            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
                     .setEventType(EventTypeEnum.USER_TASK_CREATED)
                     .setTenantId(taskEntity.getTenantId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
                     .setProcessInstanceId(event.getProcessInstanceId())
                     .setSubjectId(taskEntity.getId())
                     .setEvent(taskInfo(taskEntity).toString());
-            eventRecordRepository.save(eventRecordDO);
         }));
     }
 
@@ -97,14 +91,13 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
 
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), taskEntity.getTaskDefinitionKey(), taskEntity.getId(), event.getType());
 
-            EventRecordDO eventRecordDO = new EventRecordDO().setEventId("")
+            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
                     .setEventType(EventTypeEnum.USER_TASK_ASSIGNEE)
                     .setTenantId(taskEntity.getTenantId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
                     .setProcessInstanceId(event.getProcessInstanceId())
                     .setSubjectId(taskEntity.getId())
                     .setEvent(taskInfo(taskEntity).toString());
-            eventRecordRepository.save(eventRecordDO);
         }));
     }
 
@@ -130,14 +123,13 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), taskEntity.getTaskDefinitionKey(), taskEntity.getId(), event.getType());
 
-            EventRecordDO eventRecordDO = new EventRecordDO().setEventId("")
+            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
                     .setEventType(EventTypeEnum.USER_TASK_COMPLETE)
                     .setTenantId(taskEntity.getTenantId())
                     .setProcessInstanceId(taskEntity.getProcessInstanceId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
                     .setSubjectId(taskEntity.getId())
                     .setEvent(objectNode.toString());
-            eventRecordRepository.save(eventRecordDO);
         }));
     }
 
@@ -154,14 +146,13 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(executionEntity.getProcessInstanceId(), () -> {
             log.info("procInstId: {} {}({}) {}", executionEntity.getProcessInstanceId(), "", executionEntity.getId(), event.getType());
 
-            EventRecordDO eventRecordDO = new EventRecordDO().setEventId("")
+            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
                     .setEventType(EventTypeEnum.INSTANCE_STARTED)
                     .setTenantId(executionEntity.getTenantId())
                     .setProcessInstanceId(executionEntity.getProcessInstanceId())
                     .setProcessDefinitionId(executionEntity.getProcessDefinitionId())
                     .setSubjectId(executionEntity.getProcessInstanceId())
                     .setEvent(objectNode.toString());
-            eventRecordRepository.save(eventRecordDO);
         }));
 
     }
@@ -176,14 +167,13 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(executionEntity.getProcessInstanceId(), () -> {
             log.info("procInstId: {} {}({}) {}", executionEntity.getProcessInstanceId(), "", executionEntity.getId(), event.getType());
 
-            EventRecordDO eventRecordDO = new EventRecordDO().setEventId("")
+            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
                     .setEventType(EventTypeEnum.INSTANCE_COMPLETED)
                     .setTenantId(executionEntity.getTenantId())
                     .setProcessInstanceId(executionEntity.getProcessInstanceId())
                     .setProcessDefinitionId(executionEntity.getProcessDefinitionId())
                     .setSubjectId(executionEntity.getProcessInstanceId())
                     .setEvent(objectNode.toString());
-            eventRecordRepository.save(eventRecordDO);
         }));
 
     }

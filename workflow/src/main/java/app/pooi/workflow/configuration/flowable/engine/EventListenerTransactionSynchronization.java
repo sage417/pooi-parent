@@ -2,6 +2,8 @@ package app.pooi.workflow.configuration.flowable.engine;
 
 import app.pooi.common.multitenancy.ApplicationInfoHolder;
 import app.pooi.common.util.SpringContextUtil;
+import app.pooi.workflow.repository.workflow.EventRecordDO;
+import app.pooi.workflow.repository.workflow.EventRecordRepository;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +15,13 @@ import org.redisson.api.RedissonClient;
 import org.springframework.transaction.support.TransactionSynchronization;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Slf4j
 class EventListenerTransactionSynchronization implements TransactionSynchronization {
@@ -29,19 +34,22 @@ class EventListenerTransactionSynchronization implements TransactionSynchronizat
 
     private final ApplicationInfoHolder applicationInfoHolder;
 
-    private static final ThreadLocal<ListMultimap<String, Runnable>> TASKS = ThreadLocal.withInitial(ArrayListMultimap::create);
+    private final EventRecordRepository eventRecordRepository;
 
-    public EventListenerTransactionSynchronization(String procInstId, Runnable runnableTask) {
+    private static final ThreadLocal<ListMultimap<String, Supplier<EventRecordDO>>> TASKS = ThreadLocal.withInitial(ArrayListMultimap::create);
+
+    public EventListenerTransactionSynchronization(String procInstId, Supplier<EventRecordDO> recordDOSupplier) {
         this.executor = DtpRegistry.getExecutor("event-push");
         this.procInstId = procInstId;
         this.redissonClient = SpringContextUtil.getBean(RedissonClient.class);
         this.applicationInfoHolder = SpringContextUtil.getBean(ApplicationInfoHolder.class);
-        TASKS.get().put(procInstId, runnableTask);
+        this.eventRecordRepository = SpringContextUtil.getBean(EventRecordRepository.class);
+        TASKS.get().put(procInstId, recordDOSupplier);
     }
 
     @Override
     public void afterCommit() {
-        List<Runnable> runnableList = TASKS.get().removeAll(this.procInstId);
+        List<Supplier<EventRecordDO>> runnableList = TASKS.get().removeAll(this.procInstId);
         if (runnableList.isEmpty()) {
             return;
         }
@@ -52,21 +60,26 @@ class EventListenerTransactionSynchronization implements TransactionSynchronizat
         RFuture<Boolean> lockAsync = fairLock.tryLockAsync(240L, 180L, TimeUnit.SECONDS, tId);
         log.info("lockAsync lock: {}, tId: {}", fairLock.getName(), tId);
         executor.execute(() -> {
+            List<EventRecordDO> eventRecordDOS = prepareEventDOs(runnableList, this.procInstId);
             // ensure locked
             boolean acquireLock = ensureAsyncLock(fairLock.getName(), lockAsync, tId);
-            orderlyExecute(runnableList, this.procInstId);
+            this.eventRecordRepository.saveBatch(eventRecordDOS, 50);
             unlock(acquireLock, fairLock, tId);
         });
     }
 
-    private static void orderlyExecute(List<Runnable> runnableList, String procInstId) {
-        for (Runnable runnable : runnableList) {
-            try {
-                runnable.run();
-            } catch (Exception e) {
-                log.error("procInst task error, proInstId:{}", procInstId, e);
-            }
-        }
+    private static List<EventRecordDO> prepareEventDOs(List<Supplier<EventRecordDO>> suppliers, String procInstId) {
+        return suppliers.stream()
+                .map(s -> {
+                    try {
+                        return s.get();
+                    } catch (Exception e) {
+                        log.error("procInst task error, proInstId:{}", procInstId, e);
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private static void unlock(boolean acquireLock, RLock fairLock, long tId) {
@@ -111,7 +124,7 @@ class EventListenerTransactionSynchronization implements TransactionSynchronizat
 
     @Override
     public void afterCompletion(int status) {
-        ListMultimap<String, Runnable> runnableListMultimap = TASKS.get();
+        ListMultimap<String, ?> runnableListMultimap = TASKS.get();
         if (!runnableListMultimap.isEmpty()) {
             log.warn("TransactionSynchronization status: {}, clear procInst tasks: {}", status, runnableListMultimap.keySet());
             runnableListMultimap.clear();
