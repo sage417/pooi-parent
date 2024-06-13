@@ -1,6 +1,5 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
-import app.pooi.workflow.constant.EventTypeEnum;
 import app.pooi.workflow.repository.workflow.EventRecordDO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -36,7 +35,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), event.getActivityId(), event.getActivityType(), event.getType());
             return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.ACTIVITY_STARTED)
+                    .setEventType(EventTypeEnum.ACTIVITY_STARTED.getValue())
                     .setTenantId(executionEntity.getTenantId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
                     .setProcessInstanceId(event.getProcessInstanceId())
@@ -53,7 +52,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), event.getActivityId(), event.getActivityType(), event.getType());
             return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.ACTIVITY_COMPLETED)
+                    .setEventType(EventTypeEnum.ACTIVITY_COMPLETED.getValue())
                     .setTenantId(executionEntity.getTenantId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
                     .setProcessInstanceId(event.getProcessInstanceId())
@@ -73,7 +72,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), taskEntity.getTaskDefinitionKey(), taskEntity.getId(), event.getType());
 
             return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.USER_TASK_CREATED)
+                    .setEventType(EventTypeEnum.USER_TASK_CREATED.getValue())
                     .setTenantId(taskEntity.getTenantId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
                     .setProcessInstanceId(event.getProcessInstanceId())
@@ -92,7 +91,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), taskEntity.getTaskDefinitionKey(), taskEntity.getId(), event.getType());
 
             return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.USER_TASK_ASSIGNEE)
+                    .setEventType(EventTypeEnum.USER_TASK_ASSIGNEE.getValue())
                     .setTenantId(taskEntity.getTenantId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
                     .setProcessInstanceId(event.getProcessInstanceId())
@@ -124,7 +123,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
             log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), taskEntity.getTaskDefinitionKey(), taskEntity.getId(), event.getType());
 
             return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.USER_TASK_COMPLETE)
+                    .setEventType(EventTypeEnum.USER_TASK_COMPLETE.getValue())
                     .setTenantId(taskEntity.getTenantId())
                     .setProcessInstanceId(taskEntity.getProcessInstanceId())
                     .setProcessDefinitionId(event.getProcessDefinitionId())
@@ -147,7 +146,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
             log.info("procInstId: {} {}({}) {}", executionEntity.getProcessInstanceId(), "", executionEntity.getId(), event.getType());
 
             return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.INSTANCE_STARTED)
+                    .setEventType(EventTypeEnum.INSTANCE_STARTED.getValue())
                     .setTenantId(executionEntity.getTenantId())
                     .setProcessInstanceId(executionEntity.getProcessInstanceId())
                     .setProcessDefinitionId(executionEntity.getProcessDefinitionId())
@@ -168,7 +167,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
             log.info("procInstId: {} {}({}) {}", executionEntity.getProcessInstanceId(), "", executionEntity.getId(), event.getType());
 
             return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.INSTANCE_COMPLETED)
+                    .setEventType(EventTypeEnum.INSTANCE_COMPLETED.getValue())
                     .setTenantId(executionEntity.getTenantId())
                     .setProcessInstanceId(executionEntity.getProcessInstanceId())
                     .setProcessDefinitionId(executionEntity.getProcessDefinitionId())

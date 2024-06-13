@@ -1,11 +1,12 @@
-package app.pooi.workflow;
+package app.pooi.workflow.application;
 
-
+import app.pooi.workflow.TenantInfoHolderExtension;
 import app.pooi.workflow.conf.TestRedisConfiguration;
-import app.pooi.workflow.repository.workflow.EventRecordRepository;
+import app.pooi.workflow.query.AttachmentQuery;
+import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomUtils;
+import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.test.Deployment;
@@ -13,39 +14,40 @@ import org.flowable.spring.impl.test.FlowableSpringExtension;
 import org.flowable.task.api.Task;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.redisson.api.RFuture;
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static app.pooi.workflow.TenantInfoHolderExtension.TENANT_APP_1;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
 @ExtendWith(TenantInfoHolderExtension.class)
 @ExtendWith(FlowableSpringExtension.class)
 @SpringBootTest(classes = {TestRedisConfiguration.class})
-class ArticleWorkflowIntegrationTest {
+class UserTaskOperationApplicationTest {
+
     @Autowired
     private RuntimeService runtimeService;
+
     @Autowired
     private TaskService taskService;
+
     @Autowired
-    private RedissonClient redissonClient;
+    private UserTaskOperationApplication userTaskOperationApplication;
+
     @Autowired
-    private EventRecordRepository eventRecordRepository;
+    private ProcessEngineConfiguration processEngineConfiguration;
 
     @SneakyThrows
     @Test
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
-    void articleApprovalTest() {
-        Map<String, Object> variables = new HashMap<String, Object>();
+    void addCirculate() {
+
+        Map<String, Object> variables = new HashMap<>();
         variables.put("author", "test@baeldung.com");
         variables.put("url", "http://baeldung.com/dummy");
         runtimeService.startProcessInstanceByKeyAndTenantId("articleReview", variables, TENANT_APP_1);
@@ -54,22 +56,11 @@ class ArticleWorkflowIntegrationTest {
         assertEquals("Review the submitted tutorial", task.getName());
         variables.put("approved", true);
         taskService.setAssignee(task.getId(), "target");
-        taskService.complete(task.getId(), variables);
-        assertEquals(0, runtimeService.createProcessInstanceQuery()
-                .count());
-        TimeUnit.SECONDS.sleep(5);
-        // wait
-        assertEquals(15, eventRecordRepository.count(), "");
-    }
 
-    @Test
-    void fairLockTest() {
-        RLock fairlock = redissonClient.getFairLock("fairlock");
-        long tid = RandomUtils.nextLong();
-        RFuture<Void> rFuture = fairlock.lockAsync(tid);
-        rFuture.whenComplete((res, exception) -> {
-            assertTrue(fairlock.isHeldByThread(tid));
-            fairlock.unlockAsync();
-        });
+        userTaskOperationApplication.addCirculate(task.getId(), Sets.newHashSet("c1", "c2"));
+        taskService.complete(task.getId(), variables);
+        assertEquals(0, runtimeService.createProcessInstanceQuery().count());
+
+        assertThat(new AttachmentQuery(processEngineConfiguration.getCommandExecutor()).count()).isEqualTo(18);
     }
 }

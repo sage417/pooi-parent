@@ -1,17 +1,14 @@
-package app.pooi.workflow.constant;
+package app.pooi.workflow.configuration.flowable.engine;
 
 import app.pooi.common.util.IEnum;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum EventTypeEnum implements IEnum<String> {
-
+enum EventTypeEnum implements IEnum<String> {
     INSTANCE_STARTED("INSTANCE_STARTED"),
     INSTANCE_COMPLETED("INSTANCE_COMPLETED"),
-
     ACTIVITY_STARTED("ACTIVITY_STARTED"),
     ACTIVITY_COMPLETED("ACTIVITY_COMPLETED"),
-
     USER_TASK_CREATED("USER_TASK_CREATED"),
     USER_TASK_ASSIGNEE("USER_TASK_ASSIGNEE"),
     USER_TASK_COMPLETE("USER_TASK_COMPLETE"),

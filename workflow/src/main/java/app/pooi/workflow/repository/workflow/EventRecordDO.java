@@ -1,6 +1,5 @@
 package app.pooi.workflow.repository.workflow;
 
-import app.pooi.workflow.constant.EventTypeEnum;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -26,7 +25,7 @@ public class EventRecordDO {
 
     private String subjectId;
 
-    private EventTypeEnum eventType;
+    private String eventType;
 
     private String event;
 

@@ -2,10 +2,15 @@ package app.pooi.workflow.configuration.flowable.engine;
 
 import app.pooi.common.multitenancy.ApplicationInfoHolder;
 import app.pooi.common.util.SpringContextUtil;
+import app.pooi.model.workflow.event.EventPayload;
+import app.pooi.model.workflow.event.Header;
+import app.pooi.model.workflow.event.WorkFlowEvent;
 import app.pooi.workflow.repository.workflow.EventRecordDO;
 import app.pooi.workflow.repository.workflow.EventRecordRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.dromara.dynamictp.core.DtpRegistry;
@@ -24,7 +29,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Slf4j
-class EventListenerTransactionSynchronization implements TransactionSynchronization {
+public class EventListenerTransactionSynchronization implements TransactionSynchronization {
+    private static final ThreadLocal<ListMultimap<String, Supplier<EventRecordDO>>> TL_EVENT_RECORD_SUPPLIER =
+            ThreadLocal.withInitial(ArrayListMultimap::create);
+
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final String procInstId;
 
@@ -36,7 +45,8 @@ class EventListenerTransactionSynchronization implements TransactionSynchronizat
 
     private final EventRecordRepository eventRecordRepository;
 
-    private static final ThreadLocal<ListMultimap<String, Supplier<EventRecordDO>>> TASKS = ThreadLocal.withInitial(ArrayListMultimap::create);
+    private final WorkFlowEventFactory workFlowEventFactory;
+
 
     public EventListenerTransactionSynchronization(String procInstId, Supplier<EventRecordDO> recordDOSupplier) {
         this.executor = DtpRegistry.getExecutor("event-push");
@@ -44,28 +54,41 @@ class EventListenerTransactionSynchronization implements TransactionSynchronizat
         this.redissonClient = SpringContextUtil.getBean(RedissonClient.class);
         this.applicationInfoHolder = SpringContextUtil.getBean(ApplicationInfoHolder.class);
         this.eventRecordRepository = SpringContextUtil.getBean(EventRecordRepository.class);
-        TASKS.get().put(procInstId, recordDOSupplier);
+        this.workFlowEventFactory = SpringContextUtil.getBean(WorkFlowEventFactory.class);
+        TL_EVENT_RECORD_SUPPLIER.get().put(procInstId, recordDOSupplier);
     }
 
     @Override
     public void afterCommit() {
-        List<Supplier<EventRecordDO>> runnableList = TASKS.get().removeAll(this.procInstId);
+        List<Supplier<EventRecordDO>> runnableList = TL_EVENT_RECORD_SUPPLIER.get().removeAll(this.procInstId);
         if (runnableList.isEmpty()) {
             return;
         }
+        // 记录event record
+        List<EventRecordDO> eventRecordDOS = prepareEventDOs(runnableList, this.procInstId);
+        this.eventRecordRepository.saveBatch(eventRecordDOS, 50);
+
         String applicationCode = this.applicationInfoHolder.getApplicationCode();
         RLock fairLock = redissonClient.getFairLock(new StringJoiner(":").add("workflow").add("app").add(applicationCode)
                 .add("event-push").add("procInst").add(this.procInstId).add("lock").toString());
         long tId = RandomUtils.nextLong();
         RFuture<Boolean> lockAsync = fairLock.tryLockAsync(240L, 180L, TimeUnit.SECONDS, tId);
         log.info("lockAsync lock: {}, tId: {}", fairLock.getName(), tId);
-        executor.execute(() -> {
-            List<EventRecordDO> eventRecordDOS = prepareEventDOs(runnableList, this.procInstId);
-            // ensure locked
-            boolean acquireLock = ensureAsyncLock(fairLock.getName(), lockAsync, tId);
-            this.eventRecordRepository.saveBatch(eventRecordDOS, 50);
-            unlock(acquireLock, fairLock, tId);
-        });
+        executor.execute(() -> asyncExecute(fairLock, lockAsync, tId, eventRecordDOS));
+    }
+
+    @SneakyThrows
+    private void asyncExecute(RLock fairLock, RFuture<Boolean> lockAsync, long tId, List<EventRecordDO> eventRecordDOS) {
+        // ensure locked
+        boolean acquireLock = ensureAsyncLock(fairLock.getName(), lockAsync, tId);
+        for (EventRecordDO eventRecordDO : eventRecordDOS) {
+            WorkFlowEvent workFlowEvent = this.workFlowEventFactory.buildEvent(eventRecordDO);
+            EventPayload eventPayload = new EventPayload().setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
+                    .setEvent(workFlowEvent);
+            String bodyString = objectMapper.writeValueAsString(eventPayload);
+            log.info("event payload: {}", bodyString);
+        }
+        unlock(acquireLock, fairLock, tId);
     }
 
     private static List<EventRecordDO> prepareEventDOs(List<Supplier<EventRecordDO>> suppliers, String procInstId) {
@@ -124,7 +147,7 @@ class EventListenerTransactionSynchronization implements TransactionSynchronizat
 
     @Override
     public void afterCompletion(int status) {
-        ListMultimap<String, ?> runnableListMultimap = TASKS.get();
+        ListMultimap<String, ?> runnableListMultimap = TL_EVENT_RECORD_SUPPLIER.get();
         if (!runnableListMultimap.isEmpty()) {
             log.warn("TransactionSynchronization status: {}, clear procInst tasks: {}", status, runnableListMultimap.keySet());
             runnableListMultimap.clear();
