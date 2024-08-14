@@ -1,1 +1,1 @@
-com.suchorski.server.keycloak.providers.JsonProviderFactory
+com.suchorski.server.keycloak.providers.RegularJsonConfigProviderFactory

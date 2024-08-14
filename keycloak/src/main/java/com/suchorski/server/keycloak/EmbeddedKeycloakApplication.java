@@ -1,6 +1,6 @@
 package com.suchorski.server.keycloak;
 
-import com.suchorski.server.keycloak.providers.JsonProviderFactory;
+import com.suchorski.server.keycloak.providers.RegularJsonConfigProviderFactory;
 import jakarta.ws.rs.ApplicationPath;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.Config;
@@ -14,13 +14,13 @@ import java.util.NoSuchElementException;
 
 @Slf4j
 @ApplicationPath("/")
-public class App extends KeycloakApplication {
+public class EmbeddedKeycloakApplication extends KeycloakApplication {
 
-	static ServerProperties properties;
+	static KeycloakServerProperties properties;
 
 	@Override
 	protected void loadConfig() {
-		JsonConfigProviderFactory factory = new JsonProviderFactory();
+		JsonConfigProviderFactory factory = new RegularJsonConfigProviderFactory();
 		Config.init(factory.create().orElseThrow(() -> new NoSuchElementException("No value present")));
 	}
 

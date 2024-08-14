@@ -1,17 +1,17 @@
 package com.suchorski.server;
 
-import com.suchorski.server.keycloak.ServerProperties;
+import com.suchorski.server.keycloak.KeycloakServerProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication(exclude = LiquibaseAutoConfiguration.class)
-@EnableConfigurationProperties(ServerProperties.class)
-public class SpringbootKeycloakServerApplication {
+@EnableConfigurationProperties(KeycloakServerProperties.class)
+public class KeycloakServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(SpringbootKeycloakServerApplication.class, args);
+		SpringApplication.run(KeycloakServerApplication.class, args);
 	}
 
 }

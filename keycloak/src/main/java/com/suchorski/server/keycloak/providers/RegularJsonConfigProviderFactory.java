@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class JsonProviderFactory extends JsonConfigProviderFactory {
+public class RegularJsonConfigProviderFactory extends JsonConfigProviderFactory {
 
 	public static final String SERVER_CONTEXT_CONFIG_PROPERTY_OVERRIDES = "keycloak.server.context.config.property-overrides";
 

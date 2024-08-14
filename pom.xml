@@ -13,6 +13,7 @@
     <module>common</module>
     <module>model</module>
     <module>workflow</module>
+    <module>keycloak</module>
   </modules>
   
   <properties>

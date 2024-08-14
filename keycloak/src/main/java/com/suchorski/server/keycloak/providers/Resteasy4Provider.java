@@ -1,4 +1,4 @@
-package com.suchorski.server.resteasy;
+package com.suchorski.server.keycloak.providers;
 
 import org.jboss.resteasy.core.ResteasyContext;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;

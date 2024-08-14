@@ -21,27 +21,21 @@ import java.util.logging.Logger;
 
 @Configuration
 @RequiredArgsConstructor
-public class Config {
+public class EmbeddedKeycloakConfig {
 
-	private final ServerProperties properties;
+	private final KeycloakServerProperties properties;
 	private final DataSource dataSource;
-
-	@Bean
-	@ConditionalOnMissingBean(name = "springBootPlatform")
-	protected SimplePlatformProvider springBootPlatform() {
-		return (SimplePlatformProvider) Platform.getPlatform();
-	}
 
 	@Bean
 	ServletRegistrationBean<HttpServlet30Dispatcher> keycloakJaxRsApplication() {
 		try {
 			mockJndiEnvironment();
 		} catch (NamingException ex) {
-			Logger.getLogger(Config.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(EmbeddedKeycloakConfig.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		App.properties = properties;
+		EmbeddedKeycloakApplication.properties = properties;
 		final var servlet = new ServletRegistrationBean<HttpServlet30Dispatcher>(new HttpServlet30Dispatcher());
-		servlet.addInitParameter("jakarta.ws.rs.Application", App.class.getName());
+		servlet.addInitParameter("jakarta.ws.rs.Application", EmbeddedKeycloakApplication.class.getName());
 		servlet.addInitParameter(ResteasyContextParameters.RESTEASY_SERVLET_MAPPING_PREFIX, properties.contextPath());
 		servlet.addInitParameter(ResteasyContextParameters.RESTEASY_USE_CONTAINER_FORM_PARAMS, "true");
 		servlet.addUrlMappings(properties.contextPath() + "/*");
@@ -51,10 +45,10 @@ public class Config {
 	}
 
 	@Bean
-	FilterRegistrationBean<RequestFilter> keycloakSessionManagement() {
-		final var filter = new FilterRegistrationBean<RequestFilter>();
+	FilterRegistrationBean<EmbeddedKeycloakRequestFilter> keycloakSessionManagement() {
+		final var filter = new FilterRegistrationBean<EmbeddedKeycloakRequestFilter>();
 		filter.setName("Keycloak Session Management");
-		filter.setFilter(new RequestFilter());
+		filter.setFilter(new EmbeddedKeycloakRequestFilter());
 		filter.addUrlPatterns(properties.contextPath() + "/*");
 		return filter;
 	}
@@ -90,6 +84,12 @@ public class Config {
 	@Bean("fixedThreadPool")
 	ExecutorService fixedThreadPool() {
 		return Executors.newFixedThreadPool(5);
+	}
+
+	@Bean
+	@ConditionalOnMissingBean(name = "springBootPlatform")
+	protected SimplePlatformProvider springBootPlatform() {
+		return (SimplePlatformProvider) Platform.getPlatform();
 	}
 
 }
