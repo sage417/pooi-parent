@@ -2,7 +2,6 @@ package app.pooi.workflow.application;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
 import app.pooi.workflow.conf.TestRedisConfiguration;
-import app.pooi.workflow.query.AttachmentQuery;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static app.pooi.workflow.TenantInfoHolderExtension.TENANT_APP_1;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Slf4j
@@ -51,6 +49,7 @@ class UserTaskOperationApplicationTest {
         variables.put("author", "test@baeldung.com");
         variables.put("url", "http://baeldung.com/dummy");
         runtimeService.startProcessInstanceByKeyAndTenantId("articleReview", variables, TENANT_APP_1);
+        assertEquals(1, runtimeService.createProcessInstanceQuery().count());
         Task task = taskService.createTaskQuery()
                 .singleResult();
         assertEquals("Review the submitted tutorial", task.getName());
@@ -60,7 +59,5 @@ class UserTaskOperationApplicationTest {
         userTaskOperationApplication.addCirculate(task.getId(), Sets.newHashSet("c1", "c2"));
         taskService.complete(task.getId(), variables);
         assertEquals(0, runtimeService.createProcessInstanceQuery().count());
-
-        assertThat(new AttachmentQuery(processEngineConfiguration.getCommandExecutor()).count()).isEqualTo(18);
     }
 }

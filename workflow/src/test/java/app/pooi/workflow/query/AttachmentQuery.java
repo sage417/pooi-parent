@@ -19,6 +19,7 @@ import org.flowable.common.engine.impl.query.AbstractQuery;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.engine.task.Attachment;
 
+import java.io.Serial;
 import java.util.List;
 
 /**
@@ -26,6 +27,7 @@ import java.util.List;
  */
 public class AttachmentQuery extends AbstractQuery<AttachmentQuery, Attachment> {
 
+    @Serial
     private static final long serialVersionUID = 1L;
     protected String attachmentId;
     protected String attachmentName;
@@ -82,13 +84,13 @@ public class AttachmentQuery extends AbstractQuery<AttachmentQuery, Attachment> 
 
     @Override
     public long executeCount(CommandContext commandContext) {
-        return (Long) CommandContextUtil.getDbSqlSession(commandContext).selectOne("selectAttachmentCountByQueryCriteria", this);
+        return (Long) CommandContextUtil.getDbSqlSession(commandContext).selectOne("org.flowable.standalone.cfg.AttachmentMapper.selectAttachmentCountByQueryCriteria", this);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public List<Attachment> executeList(CommandContext commandContext) {
-        return CommandContextUtil.getDbSqlSession(commandContext).selectList("selectAttachmentByQueryCriteria", this);
+        return CommandContextUtil.getDbSqlSession(commandContext).selectList("org.flowable.standalone.cfg.AttachmentMapper.selectAttachmentByQueryCriteria", this);
     }
 
 }
