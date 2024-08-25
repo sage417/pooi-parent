@@ -10,6 +10,9 @@ spring.datasource.dynamic:
         schema: classpath*:sql/init.sql
         data: classpath*:sql/data.sql
 
+spring.redis:
+  host: localhost
+  port: 6370
 
 spring.dynamic.tp:
   enabled: true                               # 是否启用 dynamictp，默认true
@@ -26,3 +29,11 @@ spring.dynamic.tp:
       threadNamePrefix: dtp-event-push               # 线程名前缀，默认dtp
       awaitTerminationSeconds: 10                     # 优雅关闭线程池时，阻塞等待线程池中任务执行时间，默认3，单位（s）
       taskWrapperNames: [ "ttl" ]               # 任务包装器名称，继承TaskWrapper接口
+
+management:
+  health:
+    redis:
+      enabled: off
+
+flowable:
+  custom-mybatis-mappers:

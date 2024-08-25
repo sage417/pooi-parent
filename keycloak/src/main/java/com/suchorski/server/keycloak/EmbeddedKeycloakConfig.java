@@ -34,12 +34,12 @@ public class EmbeddedKeycloakConfig {
 			Logger.getLogger(EmbeddedKeycloakConfig.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		EmbeddedKeycloakApplication.properties = properties;
-		final var servlet = new ServletRegistrationBean<HttpServlet30Dispatcher>(new HttpServlet30Dispatcher());
+		final var servlet = new ServletRegistrationBean<>(new HttpServlet30Dispatcher());
 		servlet.addInitParameter("jakarta.ws.rs.Application", EmbeddedKeycloakApplication.class.getName());
 		servlet.addInitParameter(ResteasyContextParameters.RESTEASY_SERVLET_MAPPING_PREFIX, properties.contextPath());
 		servlet.addInitParameter(ResteasyContextParameters.RESTEASY_USE_CONTAINER_FORM_PARAMS, "true");
 		servlet.addUrlMappings(properties.contextPath() + "/*");
-		servlet.setLoadOnStartup(2);
+		servlet.setLoadOnStartup(1);
 		servlet.setAsyncSupported(true);
 		return servlet;
 	}

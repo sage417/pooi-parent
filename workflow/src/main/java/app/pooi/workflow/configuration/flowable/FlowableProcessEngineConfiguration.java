@@ -3,7 +3,6 @@ package app.pooi.workflow.configuration.flowable;
 import app.pooi.workflow.configuration.flowable.behavior.CustomActivityBehaviorFactory;
 import app.pooi.workflow.configuration.flowable.engine.WorkflowFlowableEngineEventListener;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import org.flowable.common.engine.impl.cfg.multitenant.TenantInfoHolder;
 import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
 import org.flowable.spring.SpringProcessEngineConfiguration;
@@ -38,7 +37,7 @@ class FlowableProcessEngineConfiguration {
             //
             conf.setEventListeners(Lists.newArrayList(engineEventListener()));
             //
-            conf.setCustomMybatisXMLMappers(Sets.newHashSet("custom-mappers/AttachmentMapper.xml"));
+//            conf.setCustomMybatisXMLMappers(Sets.newHashSet("custom-mappers/AttachmentMapper.xml"));
         };
     }
 
