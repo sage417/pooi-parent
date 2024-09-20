@@ -1,10 +1,11 @@
 package app.pooi.workflow.application;
 
+import app.pooi.common.multitenancy.ApplicationInfoHolder;
+import app.pooi.workflow.application.entity.FlowElementEntity;
 import app.pooi.workflow.util.BpmnModelUtil;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.StartEvent;
 import org.flowable.engine.RepositoryService;
@@ -13,8 +14,8 @@ import org.flowable.engine.repository.ProcessDefinitionQuery;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 @Slf4j
 @Component
@@ -23,11 +24,14 @@ public class ProcessDiagramApplication {
     @Resource
     private RepositoryService repositoryService;
 
-    public void diagram(@NonNull String tenantId, @NonNull String defKey, Integer version) {
+    @Resource
+    private ApplicationInfoHolder applicationInfoHolder;
+
+    public List<FlowElementEntity> diagram(@NonNull String defKey, Integer version) {
 
         ProcessDefinitionQuery processDefinitionQuery = repositoryService.createProcessDefinitionQuery()
                 .processDefinitionKey(defKey)
-                .processDefinitionTenantId(tenantId);
+                .processDefinitionTenantId(applicationInfoHolder.getApplicationCode());
         if (version != null) {
             processDefinitionQuery = processDefinitionQuery.processDefinitionVersion(version);
         } else {
@@ -40,11 +44,9 @@ public class ProcessDiagramApplication {
 
         Process mainProcess = bpmnModel.getMainProcess();
         List<StartEvent> startEvents = mainProcess.findFlowElementsOfType(StartEvent.class, false);
-        BpmnModelUtil.travel(bpmnModel, startEvents.getFirst().getId(), null, new Consumer<FlowElement>() {
-            @Override
-            public void accept(FlowElement flowElement) {
-                log.info("{} - {}", flowElement.getId(), flowElement.getName());
-            }
-        });
+        ArrayList<FlowElementEntity> result = new ArrayList<>();
+        BpmnModelUtil.travel(bpmnModel, startEvents.getFirst().getId(), null,
+                flowElement -> result.add(new FlowElementEntity(flowElement.getId(), flowElement.getName())));
+        return result;
     }
 }
