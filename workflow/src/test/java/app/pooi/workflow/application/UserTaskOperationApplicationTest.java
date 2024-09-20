@@ -40,8 +40,8 @@ class UserTaskOperationApplicationTest {
     @Autowired
     private ProcessEngineConfiguration processEngineConfiguration;
 
-    @SneakyThrows
     @Test
+    @SneakyThrows
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
     void addCirculate() {
 
