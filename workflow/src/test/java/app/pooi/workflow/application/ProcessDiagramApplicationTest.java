@@ -5,6 +5,7 @@ import app.pooi.workflow.application.entity.FlowElementEntity;
 import app.pooi.workflow.conf.TestRedisConfiguration;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 import org.flowable.engine.test.Deployment;
 import org.flowable.spring.impl.test.FlowableSpringExtension;
 import org.junit.jupiter.api.Test;
@@ -28,8 +29,24 @@ class ProcessDiagramApplicationTest {
     @Test
     @SneakyThrows
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
-    void diagram() {
-        List<FlowElementEntity> flowElementEntities = processDiagramApplication.diagram("articleReview", null);
-        log.info("{}", flowElementEntities);
+    void bfs() {
+        List<FlowElementEntity> flowElementEntities = processDiagramApplication.bfs("articleReview", null);
+        Assertions.assertThat(flowElementEntities).hasSize(12);
+    }
+
+    @Test
+    @SneakyThrows
+    @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
+    void dfs() {
+        List<FlowElementEntity> flowElementEntities = processDiagramApplication.dfs("articleReview", null);
+        Assertions.assertThat(flowElementEntities).hasSize(12);
+    }
+
+    @Test
+    @SneakyThrows
+    @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
+    void travel() {
+        List<FlowElementEntity> flowElementEntities = processDiagramApplication.travel("articleReview", null);
+        Assertions.assertThat(flowElementEntities).hasSize(12);
     }
 }

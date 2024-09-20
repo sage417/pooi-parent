@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
+import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
 import org.flowable.common.engine.impl.persistence.cache.EntityCache;
@@ -31,12 +32,12 @@ public class BpmnModelUtil {
         }
         ArrayDeque<FlowElement> deque = new ArrayDeque<>();
         deque.push(startNode);
-        Set<FlowElement> visitedFlowElements = new HashSet<>();
+        Set<FlowElement> visited = new HashSet<>();
 
         while (!deque.isEmpty()) {
             List<FlowNode> flowNodes = new ArrayList<>();
             for (FlowElement flowElement : deque) {
-                if (!visitedFlowElements.add(flowElement)) {
+                if (!visited.add(flowElement)) {
                     continue;
                 }
                 if (flowElement instanceof FlowNode) {
@@ -55,6 +56,33 @@ public class BpmnModelUtil {
                         .forEach(deque::addLast);
 
                 flowNode.getOutgoingFlows().forEach(visitor);
+            }
+        }
+    }
+
+    public static void dfs(@NonNull BpmnModel bpmnModel,
+                           @NonNull String startNodeId,
+                           @NonNull Consumer<FlowElement> visitor) {
+        FlowNode startNode = (FlowNode) bpmnModel.getFlowElement(startNodeId);
+        if (startNode == null) return;
+
+        Deque<FlowNode> q = new ArrayDeque<>();
+        q.push(startNode);
+
+        Set<String> visited = new HashSet<>();
+
+        while (!q.isEmpty()) {
+            FlowNode current = q.pop();
+            visitor.accept(current);
+
+            ListIterator<SequenceFlow> iterator = current.getOutgoingFlows().listIterator(current.getOutgoingFlows().size());
+            while (iterator.hasPrevious()) {
+                SequenceFlow sequenceFlow = iterator.previous();
+                visitor.accept(sequenceFlow);
+                FlowElement children = sequenceFlow.getTargetFlowElement();
+                if (visited.add(children.getId()) && children instanceof FlowNode) {
+                    q.push(((FlowNode) children));
+                }
             }
         }
     }
@@ -86,6 +114,14 @@ public class BpmnModelUtil {
             }
         }
         return null;
+    }
+
+    public static StartEvent findFirstStartEvent(@NonNull BpmnModel bpmnModel) {
+        Process mainProcess = bpmnModel.getMainProcess();
+        if (mainProcess == null) return null;
+        List<StartEvent> startEvents = mainProcess.findFlowElementsOfType(StartEvent.class, false);
+        if (startEvents == null || startEvents.isEmpty()) return null;
+        return startEvents.getFirst();
     }
 
     private static int calculateGatewayForkJoin(@NonNull BpmnModel bpmnModel,
