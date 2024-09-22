@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.util.CollectionUtils;
 
 
-@MapperScan(basePackages = "app.pooi.workflow.repository", annotationClass = Mapper.class)
+@MapperScan(basePackages = "app.pooi.workflow.repository", annotationClass = Mapper.class, sqlSessionFactoryRef = "sqlSessionFactory")
 @Configuration
 class MybatisConfiguration {
 
