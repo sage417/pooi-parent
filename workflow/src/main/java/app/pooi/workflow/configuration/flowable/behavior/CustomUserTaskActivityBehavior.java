@@ -4,7 +4,6 @@ import app.pooi.workflow.util.BpmnModelUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.FlowNode;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.delegate.Expression;
@@ -26,7 +25,6 @@ import org.flowable.engine.impl.context.BpmnOverrideContext;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.util.BpmnLoggingSessionUtil;
 import org.flowable.engine.impl.util.CommandContextUtil;
-import org.flowable.engine.impl.util.ProcessDefinitionUtil;
 import org.flowable.engine.impl.util.TaskHelper;
 import org.flowable.engine.interceptor.CreateUserTaskAfterContext;
 import org.flowable.engine.interceptor.CreateUserTaskBeforeContext;
@@ -112,6 +110,8 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         handlePriority(beforeContext, expressionManager, task, execution, activeTaskPriority);
         handleCategory(beforeContext, expressionManager, task, execution);
         handleFormKey(beforeContext, expressionManager, task, execution);
+        // maybe pre handle assignments here to do something
+        preHandleAssignments(beforeContext, expressionManager, null, execution);
 
         boolean skipUserTask = SkipExpressionUtil.isSkipExpressionEnabled(beforeContext.getSkipExpression(), userTask.getId(), execution, commandContext)
                 && SkipExpressionUtil.shouldSkipFlowElement(beforeContext.getSkipExpression(), userTask.getId(), execution, commandContext);
@@ -154,7 +154,7 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
                     execution.setVariable(idVariableName, task.getId());
                 }
             }
-            if (handleIsAutoComplete(task, execution, commandContext)) {
+            if (handleIfAutoComplete(task, execution, commandContext)) {
                 TaskHelper.completeTask(task, null, null, null, null, commandContext);
             }
         } else {
@@ -163,8 +163,22 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         }
     }
 
-    protected static boolean handleIsAutoComplete(TaskEntity task, DelegateExecution execution, CommandContext commandContext) {
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
+    protected void preHandleAssignments(CreateUserTaskBeforeContext beforeContext, ExpressionManager expressionManager, TaskEntity task, DelegateExecution execution) {
+        if (StringUtils.isNotEmpty(beforeContext.getAssignee())) {
+            Object assigneeExpressionValue = expressionManager.createExpression(beforeContext.getAssignee()).getValue(execution);
+            String assigneeValue = null;
+            if (assigneeExpressionValue != null) {
+                assigneeValue = assigneeExpressionValue.toString();
+            }
+
+            if (StringUtils.isEmpty(assigneeValue)) {
+                // to something when assignee is empty here
+            }
+        }
+    }
+
+    protected boolean handleIfAutoComplete(TaskEntity task, DelegateExecution execution, CommandContext commandContext) {
+//        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
         BpmnModelUtil.findPreFlowElement(commandContext, ((FlowNode) execution.getCurrentFlowElement()), UserTask.class);
         return false;
     }

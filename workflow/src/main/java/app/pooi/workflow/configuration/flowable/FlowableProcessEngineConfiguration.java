@@ -34,8 +34,10 @@ class FlowableProcessEngineConfiguration {
             conf.setEnableHistoricTaskLogging(true);
 
             conf.setActivityBehaviorFactory(new CustomActivityBehaviorFactory());
-            //
+            // 事件监听
             conf.setEventListeners(Lists.newArrayList(engineEventListener()));
+
+            conf.setCreateUserTaskInterceptor(new FlowableCreateUserTaskInterceptor());
             //
 //            conf.setCustomMybatisXMLMappers(Sets.newHashSet("custom-mappers/AttachmentMapper.xml"));
         };

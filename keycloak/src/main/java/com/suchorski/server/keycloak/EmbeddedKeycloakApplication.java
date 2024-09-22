@@ -1,6 +1,7 @@
 package com.suchorski.server.keycloak;
 
 import com.suchorski.server.keycloak.providers.RegularJsonConfigProviderFactory;
+import jakarta.ws.rs.ApplicationPath;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.Config;
 import org.keycloak.exportimport.ExportImportManager;
@@ -12,7 +13,7 @@ import org.keycloak.services.util.JsonConfigProviderFactory;
 import java.util.NoSuchElementException;
 
 @Slf4j
-//@ApplicationPath("/")
+@ApplicationPath("/")
 public class EmbeddedKeycloakApplication extends KeycloakApplication {
 
 	static KeycloakServerProperties properties;

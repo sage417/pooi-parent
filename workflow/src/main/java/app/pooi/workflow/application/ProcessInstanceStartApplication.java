@@ -1,5 +1,6 @@
 package app.pooi.workflow.application;
 
+import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.impl.persistence.deploy.DeploymentManager;
@@ -8,6 +9,7 @@ import org.flowable.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class ProcessInstanceStartApplication {
 
