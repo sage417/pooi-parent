@@ -46,6 +46,12 @@
             <version>6.8.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.flowable</groupId>
+            <artifactId>flowable-spring-boot-starter-ui-modeler</artifactId>
+            <version>6.8.1</version>
+        </dependency>
+
 <!--        <dependency>-->
 <!--            <groupId>org.flowable</groupId>-->
 <!--            <artifactId>flowable-spring-boot-starter-process-rest</artifactId>-->
