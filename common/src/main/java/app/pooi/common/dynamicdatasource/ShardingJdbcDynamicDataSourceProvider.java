@@ -5,9 +5,8 @@ import com.baomidou.dynamic.datasource.ds.ItemDataSource;
 import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DataSourceProperty;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.shardingsphere.driver.api.yaml.YamlShardingSphereDataSourceFactory;
-import org.apache.shardingsphere.infra.yaml.engine.YamlEngine;
+import org.apache.shardingsphere.infra.util.yaml.YamlEngine;
 
 import javax.annotation.Resource;
 import javax.sql.DataSource;
@@ -26,8 +25,13 @@ class ShardingJdbcDynamicDataSourceProvider extends JdbcDynamicDataSourceProvide
 
     protected Map<String, DataSource> loadDataSources(String datasourceKey) {
         var dataSourceMap = super.loadDataSources(datasourceKey);
+
+        var configurationPropertiesMap = shardingTableConfigurationProperties.getRootConfiguration();
+        if (configurationPropertiesMap == null) {
+            return dataSourceMap;
+        }
+
         // 分表配置
-        var configurationPropertiesMap = MapUtils.emptyIfNull(shardingTableConfigurationProperties.getRootConfiguration());
         // 存在则构造数据源
         for (Map.Entry<String, DataSource> entry : dataSourceMap.entrySet()) {
             if (!configurationPropertiesMap.containsKey(entry.getKey())) {
@@ -37,8 +41,6 @@ class ShardingJdbcDynamicDataSourceProvider extends JdbcDynamicDataSourceProvide
         }
         return dataSourceMap;
     }
-
-
 
 
     @SneakyThrows

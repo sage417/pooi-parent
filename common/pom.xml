@@ -19,16 +19,16 @@
     </properties>
     
     <dependencies>
-        
+
         <dependency>
             <groupId>org.apache.shardingsphere</groupId>
             <artifactId>shardingsphere-jdbc</artifactId>
-            <version>5.1.2</version>
+            <version>5.5.0</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
+                    <groupId>org.apache.shardingsphere</groupId>
+                    <artifactId>shardingsphere-test-util</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
