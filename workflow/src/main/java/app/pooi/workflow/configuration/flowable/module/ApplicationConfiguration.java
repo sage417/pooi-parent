@@ -14,7 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * @author yufeng.jin
+ * @author sage417
  */
 @Configuration
 @ImportAutoConfiguration(ModelerDatabaseConfiguration.class)
