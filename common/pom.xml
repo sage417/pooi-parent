@@ -16,6 +16,8 @@
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <transmittable-thread-local.version>2.14.5</transmittable-thread-local.version>
+        <shardingsphere-jdbc.version>5.5.0</shardingsphere-jdbc.version>
     </properties>
     
     <dependencies>
@@ -23,7 +25,7 @@
         <dependency>
             <groupId>org.apache.shardingsphere</groupId>
             <artifactId>shardingsphere-jdbc</artifactId>
-            <version>5.5.0</version>
+            <version>${shardingsphere-jdbc.version}</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
@@ -65,7 +67,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>transmittable-thread-local</artifactId>
-            <version>2.14.5</version>
+            <version>${transmittable-thread-local.version}</version>
         </dependency>
     
         <dependency>
