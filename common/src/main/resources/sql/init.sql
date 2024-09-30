@@ -8,6 +8,7 @@ CREATE TABLE `t_tenant_db_info`
     `url`          varchar(500) NOT NULL DEFAULT '' COMMENT '连接地址',
     `driver_class` varchar(100) NOT NULL DEFAULT '' COMMENT '驱动类',
     `type`         varchar(50)  NOT NULL DEFAULT '' COMMENT '数据源类型',
+    `schema_sql`       varchar(200)  NOT NULL DEFAULT '' COMMENT 'schema文件',
     `create_time`  datetime(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `update_time`  datetime(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
     `module`       varchar(50)  NOT NULL DEFAULT '' COMMENT '数据源所属子模块',
