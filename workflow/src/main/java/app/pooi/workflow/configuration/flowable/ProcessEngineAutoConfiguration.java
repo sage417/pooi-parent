@@ -99,7 +99,8 @@ public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.Pro
     }
 
     @Bean
-    public SpringProcessEngineConfiguration springProcessEngineConfiguration(DataSource dataSource, PlatformTransactionManager platformTransactionManager,
+    public SpringProcessEngineConfiguration springProcessEngineConfiguration(@Qualifier("shardingSphereDatasource")DataSource dataSource,
+                                                                             @Qualifier("shardingSphereTransactionManager")PlatformTransactionManager platformTransactionManager,
                                                                              ObjectProvider<ObjectMapper> objectMapperProvider,
                                                                              @Process ObjectProvider<IdGenerator> processIdGenerator,
                                                                              ObjectProvider<IdGenerator> globalIdGenerator,
