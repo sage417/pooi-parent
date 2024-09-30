@@ -57,7 +57,8 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
                 var username = rs.getString("username");
                 var password = rs.getString("password");
                 var driverClass = rs.getString("driver_class");
-                dataSourcePropertiesMap.put(dbCode, buildProperty(url, username, password, driverClass));
+                var schemaSql = rs.getString("schema_sql");
+                dataSourcePropertiesMap.put(dbCode, buildProperty(url, username, password, driverClass, schemaSql));
             }
         } catch (Exception ex) {
             log.error("加载动态数据源信息失败", ex);
@@ -72,13 +73,17 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
     }
 
 
-    private static DataSourceProperty buildProperty(String url, String username, String password, String driverClass) {
+    private static DataSourceProperty buildProperty(String url, String username, String password, String driverClass, String schemaSql) {
         var dataSourceProperty = new DataSourceProperty();
         dataSourceProperty.setUrl(url)
                 .setUsername(username)
                 .setPassword(password)
                 .setDriverClassName(driverClass);
-
+        
+        if (StringUtils.isNotBlank(schemaSql)) {
+            dataSourceProperty.getInit().setSchema(schemaSql);
+        }
+        
         var hikariCpConfig = new HikariCpConfig();
         hikariCpConfig.setMinIdle(0);
         hikariCpConfig.setMaxPoolSize(50);
