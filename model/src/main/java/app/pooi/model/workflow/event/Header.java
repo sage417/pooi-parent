@@ -1,11 +1,11 @@
 package app.pooi.model.workflow.event;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class Header {
 
     private @NonNull String eventId;
@@ -16,7 +16,9 @@ public class Header {
      */
     private long ts;
 
-    public Header() {
+    public Header(@NonNull String eventId, @NonNull String eventType) {
         this.ts = System.currentTimeMillis();
+        this.eventId = eventId;
+        this.eventType = eventType;
     }
 }

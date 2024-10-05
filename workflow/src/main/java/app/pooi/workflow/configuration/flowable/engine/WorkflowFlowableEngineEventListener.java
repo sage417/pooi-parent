@@ -1,193 +1,157 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
+import app.pooi.model.workflow.event.*;
 import app.pooi.workflow.repository.workflow.EventRecordDO;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEntityEvent;
-import org.flowable.common.engine.api.delegate.event.FlowableEventType;
-import org.flowable.common.engine.impl.persistence.StrongUuidGenerator;
 import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
 import org.flowable.engine.delegate.event.FlowableActivityEvent;
-import org.flowable.engine.delegate.event.FlowableEntityWithVariablesEvent;
 import org.flowable.engine.delegate.event.FlowableProcessStartedEvent;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.engine.impl.persistence.entity.HistoricProcessInstanceEntity;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.Map;
+import javax.annotation.Resource;
 
 @Slf4j
 @Setter
 public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineEventListener {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final StrongUuidGenerator uuidGenerator = new StrongUuidGenerator();
+
+    @Resource
+    private EventMapper eventMapper;
 
     @SneakyThrows
     @Override
     protected void activityStarted(FlowableActivityEvent event) {
-        ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager().findById(event.getExecutionId());
+        HistoricProcessInstanceEntity historicProcessInstance = CommandContextUtil.getHistoricProcessInstanceEntityManager()
+                .findById(event.getProcessInstanceId());
+        ActivityStartedEvent activityStartedEvent = eventMapper.activityStartEvent(historicProcessInstance);
+        activityStartedEvent.setActivityId(event.getActivityId());
 
-        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
-            log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), event.getActivityId(), event.getActivityType(), event.getType());
-            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.ACTIVITY_STARTED.getValue())
-                    .setTenantId(executionEntity.getTenantId())
-                    .setProcessDefinitionId(event.getProcessDefinitionId())
-                    .setProcessInstanceId(event.getProcessInstanceId())
-                    .setSubjectId(event.getActivityId())
-                    .setEvent(null);
-        }));
+        EventRecordDO eventRecordDO = eventMapper.activityStartedEventRecordDO(event);
+        EventPayload eventPayload = new EventPayload()
+                .setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
+                .setEvent(activityStartedEvent);
+        eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
     }
 
     @SneakyThrows
     @Override
     protected void activityCompleted(FlowableActivityEvent event) {
-        ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager().findById(event.getExecutionId());
+        HistoricProcessInstanceEntity historicProcessInstance = CommandContextUtil.getHistoricProcessInstanceEntityManager()
+                .findById(event.getProcessInstanceId());
+        ActivityCompletedEvent activityCompletedEvent = eventMapper.activityEndEvent(historicProcessInstance);
+        activityCompletedEvent.setActivityId(event.getActivityId());
 
-        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
-            log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), event.getActivityId(), event.getActivityType(), event.getType());
-            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.ACTIVITY_COMPLETED.getValue())
-                    .setTenantId(executionEntity.getTenantId())
-                    .setProcessDefinitionId(event.getProcessDefinitionId())
-                    .setProcessInstanceId(event.getProcessInstanceId())
-                    .setSubjectId(event.getActivityId())
-                    .setEvent(null);
-        }));
+        EventRecordDO eventRecordDO = eventMapper.activityCompletedEventRecordDO(event);
+        EventPayload eventPayload = new EventPayload()
+                .setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
+                .setEvent(activityCompletedEvent);
+        eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
 
+        TransactionSynchronizationManager.registerSynchronization(
+                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
     }
 
     @Override
+    @SneakyThrows
     protected void taskCreated(FlowableEngineEntityEvent event) {
-        ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager().findById(event.getExecutionId());
+        HistoricProcessInstanceEntity historicProcessInstance = CommandContextUtil.getHistoricProcessInstanceEntityManager()
+                .findById(event.getProcessInstanceId());
 
-        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
-            TaskEntity taskEntity = ((TaskEntity) event.getEntity());
+        EventRecordDO eventRecordDO = eventMapper.taskCreatedEventRecordDO((TaskEntity) event.getEntity());
+        UserTaskCreatedEvent userTaskCreatedEvent = eventMapper.taskCreatedEvent(historicProcessInstance, ((TaskEntity) event.getEntity()));
 
-            log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), taskEntity.getTaskDefinitionKey(), taskEntity.getId(), event.getType());
+        EventPayload eventPayload = new EventPayload()
+                .setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
+                .setEvent(userTaskCreatedEvent);
+        eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
 
-            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.USER_TASK_CREATED.getValue())
-                    .setTenantId(taskEntity.getTenantId())
-                    .setProcessDefinitionId(event.getProcessDefinitionId())
-                    .setProcessInstanceId(event.getProcessInstanceId())
-                    .setSubjectId(taskEntity.getId())
-                    .setEvent(taskInfo(taskEntity).toString());
-        }));
+        TransactionSynchronizationManager.registerSynchronization(
+                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
     }
 
     @Override
+    @SneakyThrows
     protected void taskAssigned(FlowableEngineEntityEvent event) {
-        ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager().findById(event.getExecutionId());
 
-        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
-            TaskEntity taskEntity = ((TaskEntity) event.getEntity());
+        HistoricProcessInstanceEntity historicProcessInstance = CommandContextUtil.getHistoricProcessInstanceEntityManager()
+                .findById(event.getProcessInstanceId());
 
-            log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), taskEntity.getTaskDefinitionKey(), taskEntity.getId(), event.getType());
+        EventRecordDO eventRecordDO = eventMapper.taskAssigneeEventRecordDO((TaskEntity) event.getEntity());
+        UserTaskAssigneeEvent userTaskAssigneeEvent = eventMapper.taskAssigneeEvent(historicProcessInstance, ((TaskEntity) event.getEntity()));
 
-            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.USER_TASK_ASSIGNEE.getValue())
-                    .setTenantId(taskEntity.getTenantId())
-                    .setProcessDefinitionId(event.getProcessDefinitionId())
-                    .setProcessInstanceId(event.getProcessInstanceId())
-                    .setSubjectId(taskEntity.getId())
-                    .setEvent(taskInfo(taskEntity).toString());
-        }));
+        EventPayload eventPayload = new EventPayload()
+                .setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
+                .setEvent(userTaskAssigneeEvent);
+        eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
     }
 
     @Override
+    @SneakyThrows
     protected void taskCompleted(FlowableEngineEntityEvent event) {
-        ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager().findById(event.getExecutionId());
+        HistoricProcessInstanceEntity historicProcessInstance = CommandContextUtil.getHistoricProcessInstanceEntityManager()
+                .findById(event.getProcessInstanceId());
 
-        if (!(event instanceof FlowableEntityWithVariablesEvent entityWithVariablesEvent)) {
-            log.warn("event type:{}", event.getClass().getName());
-            return;
-        }
-        TaskEntity taskEntity = ((TaskEntity) entityWithVariablesEvent.getEntity());
-        @SuppressWarnings("rawtypes")
-        Map variables = entityWithVariablesEvent.getVariables();
-        FlowableEventType eventType = entityWithVariablesEvent.getType();
+        EventRecordDO eventRecordDO = eventMapper.taskCompletedEventRecordDO((TaskEntity) event.getEntity());
+        UserTaskCompletedEvent userTaskCompletedEvent = eventMapper.taskCompletedEvent(historicProcessInstance, ((TaskEntity) event.getEntity()));
 
-//        TaskService taskService = CommandContextUtil.getProcessEngineConfiguration().getTaskService();
-//        taskService.createTaskQuery().list();
+        EventPayload eventPayload = new EventPayload()
+                .setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
+                .setEvent(userTaskCompletedEvent);
+        eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
 
-        ObjectNode objectNode = taskInfo(taskEntity);
-        objectNode.putPOJO("variables", variables);
-
-        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> {
-            log.info("procInstId: {} {}({}) {}", event.getProcessInstanceId(), taskEntity.getTaskDefinitionKey(), taskEntity.getId(), event.getType());
-
-            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.USER_TASK_COMPLETE.getValue())
-                    .setTenantId(taskEntity.getTenantId())
-                    .setProcessInstanceId(taskEntity.getProcessInstanceId())
-                    .setProcessDefinitionId(event.getProcessDefinitionId())
-                    .setSubjectId(taskEntity.getId())
-                    .setEvent(objectNode.toString());
-        }));
+        TransactionSynchronizationManager.registerSynchronization(
+                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
     }
 
     @Override
+    @SneakyThrows
     protected void processStarted(FlowableProcessStartedEvent event) {
-
         if (!(event.getEntity() instanceof ExecutionEntity executionEntity)) {
             return;
         }
-        ObjectNode objectNode = objectMapper.createObjectNode();
-        @SuppressWarnings("rawtypes")
-        Map variables = event.getVariables();
-        objectNode.putPOJO("variables", variables);
-        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(executionEntity.getProcessInstanceId(), () -> {
-            log.info("procInstId: {} {}({}) {}", executionEntity.getProcessInstanceId(), "", executionEntity.getId(), event.getType());
 
-            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.INSTANCE_STARTED.getValue())
-                    .setTenantId(executionEntity.getTenantId())
-                    .setProcessInstanceId(executionEntity.getProcessInstanceId())
-                    .setProcessDefinitionId(executionEntity.getProcessDefinitionId())
-                    .setSubjectId(executionEntity.getProcessInstanceId())
-                    .setEvent(objectNode.toString());
-        }));
+        EventRecordDO eventRecordDO = this.eventMapper.processInstanceStartRecordDO(executionEntity);
+        InstanceStartedEvent instanceStartedEvent = this.eventMapper.instanceStartedEvent(executionEntity);
 
+        EventPayload eventPayload = new EventPayload()
+                .setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
+                .setEvent(instanceStartedEvent);
+        eventRecordDO.setEvent(this.objectMapper.writeValueAsString(eventPayload));
+
+        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(executionEntity.getProcessInstanceId(), () -> eventRecordDO));
     }
 
     @Override
+    @SneakyThrows
     protected void processCompleted(FlowableEngineEntityEvent event) {
         if (!(event.getEntity() instanceof ExecutionEntity executionEntity)) {
             return;
         }
-        ObjectNode objectNode = objectMapper.createObjectNode();
 
-        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(executionEntity.getProcessInstanceId(), () -> {
-            log.info("procInstId: {} {}({}) {}", executionEntity.getProcessInstanceId(), "", executionEntity.getId(), event.getType());
+        EventRecordDO eventRecordDO = this.eventMapper.processInstanceCompleteRecordDO(executionEntity);
+        InstanceCompletedEvent instanceCompletedEvent = this.eventMapper.instanceCompletedEvent(executionEntity);
 
-            return new EventRecordDO().setEventId(uuidGenerator.getNextId())
-                    .setEventType(EventTypeEnum.INSTANCE_COMPLETED.getValue())
-                    .setTenantId(executionEntity.getTenantId())
-                    .setProcessInstanceId(executionEntity.getProcessInstanceId())
-                    .setProcessDefinitionId(executionEntity.getProcessDefinitionId())
-                    .setSubjectId(executionEntity.getProcessInstanceId())
-                    .setEvent(objectNode.toString());
-        }));
+        EventPayload eventPayload = new EventPayload()
+                .setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
+                .setEvent(instanceCompletedEvent);
+        eventRecordDO.setEvent(this.objectMapper.writeValueAsString(eventPayload));
 
+        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(executionEntity.getProcessInstanceId(), () -> eventRecordDO));
     }
 
-    private ObjectNode taskInfo(TaskEntity task) {
-        ObjectNode objectNode = objectMapper.createObjectNode();
-        objectNode.put("id", task.getId());
-        objectNode.put("name", task.getName());
-        objectNode.put("assignee", task.getAssignee());
-        objectNode.put("category", task.getCategory());
-        objectNode.put("formKey", task.getFormKey());
-        objectNode.put("owner", task.getOwner());
-        objectNode.put("parentTaskId", task.getParentTaskId());
-        objectNode.put("definitionId", task.getTaskDefinitionId());
-        objectNode.put("definitionKey", task.getTaskDefinitionKey());
-        return objectNode;
-    }
 }

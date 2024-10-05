@@ -3,8 +3,6 @@ package app.pooi.workflow.configuration.flowable.engine;
 import app.pooi.common.multitenancy.ApplicationInfoHolder;
 import app.pooi.common.util.SpringContextUtil;
 import app.pooi.model.workflow.event.EventPayload;
-import app.pooi.model.workflow.event.Header;
-import app.pooi.model.workflow.event.WorkFlowEvent;
 import app.pooi.workflow.repository.workflow.EventRecordDO;
 import app.pooi.workflow.repository.workflow.EventRecordRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,8 +43,6 @@ public class EventListenerTransactionSynchronization implements TransactionSynch
 
     private final EventRecordRepository eventRecordRepository;
 
-    private final WorkFlowEventFactory workFlowEventFactory;
-
 
     public EventListenerTransactionSynchronization(String procInstId, Supplier<EventRecordDO> recordDOSupplier) {
         this.executor = DtpRegistry.getExecutor("event-push");
@@ -54,7 +50,6 @@ public class EventListenerTransactionSynchronization implements TransactionSynch
         this.redissonClient = SpringContextUtil.getBean(RedissonClient.class);
         this.applicationInfoHolder = SpringContextUtil.getBean(ApplicationInfoHolder.class);
         this.eventRecordRepository = SpringContextUtil.getBean(EventRecordRepository.class);
-        this.workFlowEventFactory = SpringContextUtil.getBean(WorkFlowEventFactory.class);
         TL_EVENT_RECORD_SUPPLIER.get().put(procInstId, recordDOSupplier);
     }
 
@@ -82,9 +77,7 @@ public class EventListenerTransactionSynchronization implements TransactionSynch
         // ensure locked
         boolean acquireLock = ensureAsyncLock(fairLock.getName(), lockAsync, tId);
         for (EventRecordDO eventRecordDO : eventRecordDOS) {
-            WorkFlowEvent workFlowEvent = this.workFlowEventFactory.buildEvent(eventRecordDO);
-            EventPayload eventPayload = new EventPayload().setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
-                    .setEvent(workFlowEvent);
+            EventPayload eventPayload = objectMapper.readValue(eventRecordDO.getEvent(), EventPayload.class);
             String bodyString = objectMapper.writeValueAsString(eventPayload);
             log.info("event payload: {}", bodyString);
         }

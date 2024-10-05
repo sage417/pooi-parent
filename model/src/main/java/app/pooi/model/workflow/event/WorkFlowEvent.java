@@ -1,27 +1,61 @@
 package app.pooi.model.workflow.event;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
+import java.io.Serializable;
+import java.util.Map;
+
+@Data
+@Accessors(chain = true)
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "eventType", visible = false, include = JsonTypeInfo.As.PROPERTY)
-public interface WorkFlowEvent {
+@JsonSubTypes(value = {
+        @JsonSubTypes.Type(InstanceStartedEvent.class),
+        @JsonSubTypes.Type(InstanceCompletedEvent.class),
+        @JsonSubTypes.Type(ActivityStartedEvent.class),
+        @JsonSubTypes.Type(ActivityCompletedEvent.class),
+        @JsonSubTypes.Type(UserTaskCreatedEvent.class),
+        @JsonSubTypes.Type(UserTaskAssigneeEvent.class),
+        @JsonSubTypes.Type(UserTaskCompletedEvent.class),
+})
+public class WorkFlowEvent implements Serializable {
 
-    /**
-     * process definition
-     */
-    String getProcessDefinitionKey();
+    private String processInstanceId;
 
-    /**
-     * process definition
-     */
-    String getProcessDefinitionVersion();
+    private String processDefinitionId;
 
-    /**
-     * process definition
-     */
-    String getProcessDefinitionId();
+    private String processDefinitionKey;
 
-    /**
-     * process instance id
-     */
-    String getProcessInstanceId();
+    private String processDefinitionVersion;
+
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    @Accessors(chain = true)
+    public static class InstanceBaseEvent extends WorkFlowEvent {
+
+        private Map<String, Object> variables;
+
+    }
+
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    @Accessors(chain = true)
+    public static class ActivityBaseEvent extends WorkFlowEvent {
+
+        private String activityId;
+
+    }
+
+    @EqualsAndHashCode(callSuper = true)
+    @Data
+    @Accessors(chain = true)
+    public static class TaskBaseEvent extends WorkFlowEvent {
+
+        private String taskId;
+
+    }
+
 }
