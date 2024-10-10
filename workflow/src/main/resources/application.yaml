@@ -10,9 +10,9 @@ spring.datasource.dynamic:
         schema: classpath*:sql/init.sql
         data: classpath*:sql/data.sql
 
-spring.redis:
-  host: localhost
-  port: 6370
+spring.data.redis:
+  host: 192.168.31.104
+  port: 30120
 
 spring.dynamic.tp:
   enabled: true                               # 是否启用 dynamictp，默认true

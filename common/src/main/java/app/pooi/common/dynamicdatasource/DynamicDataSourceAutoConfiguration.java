@@ -2,13 +2,14 @@ package app.pooi.common.dynamicdatasource;
 
 import app.pooi.common.multitenancy.ApplicationInfoHolder;
 import app.pooi.common.prop.SpringShardingTableConfigurationProperties;
+import com.baomidou.dynamic.datasource.creator.DataSourceProperty;
 import com.baomidou.dynamic.datasource.provider.DynamicDataSourceProvider;
-import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DataSourceProperty;
 import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DynamicDataSourceProperties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shardingsphere.driver.api.yaml.YamlShardingSphereDataSourceFactory;
 import org.apache.shardingsphere.sharding.yaml.config.YamlShardingRuleConfiguration;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -20,9 +21,14 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 @AutoConfigureBefore(value = com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DynamicDataSourceAutoConfiguration.class)
 class DynamicDataSourceAutoConfiguration {
+
+
+    @Autowired
+    private List<DynamicDataSourceProvider> providers;
 
     @ConditionalOnMissingBean
     @Bean
@@ -52,7 +58,7 @@ class DynamicDataSourceAutoConfiguration {
     @Primary
     @Bean
     public DataSource dataSource(DynamicDataSourceProperties properties) {
-        var routingDataSource = new TenantAwareDynamicRoutingDataSource();
+        var routingDataSource = new TenantAwareDynamicRoutingDataSource(providers);
         routingDataSource.setPrimary(properties.getPrimary());
         routingDataSource.setStrict(properties.getStrict());
         routingDataSource.setStrategy(properties.getStrategy());

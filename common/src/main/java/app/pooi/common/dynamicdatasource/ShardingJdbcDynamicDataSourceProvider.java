@@ -1,8 +1,8 @@
 package app.pooi.common.dynamicdatasource;
 
 import app.pooi.common.prop.SpringShardingTableConfigurationProperties;
+import com.baomidou.dynamic.datasource.creator.DataSourceProperty;
 import com.baomidou.dynamic.datasource.ds.ItemDataSource;
-import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DataSourceProperty;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.driver.api.yaml.YamlShardingSphereDataSourceFactory;

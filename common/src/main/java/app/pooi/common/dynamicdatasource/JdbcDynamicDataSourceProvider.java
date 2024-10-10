@@ -1,8 +1,8 @@
 package app.pooi.common.dynamicdatasource;
 
+import com.baomidou.dynamic.datasource.creator.DataSourceProperty;
+import com.baomidou.dynamic.datasource.creator.hikaricp.HikariCpConfig;
 import com.baomidou.dynamic.datasource.provider.AbstractJdbcDataSourceProvider;
-import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.DataSourceProperty;
-import com.baomidou.dynamic.datasource.spring.boot.autoconfigure.hikari.HikariCpConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -20,7 +20,7 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
     protected final DataSourceProperty property;
 
     public JdbcDynamicDataSourceProvider(DataSourceProperty property) {
-        super(property.getDriverClassName(), property.getUrl(),
+        super(null, property.getUrl(),
                 property.getUsername(), property.getPassword());
         this.property = property;
     }
@@ -75,10 +75,10 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
 
     private static DataSourceProperty buildProperty(String url, String username, String password, String driverClass, String schemaSql) {
         var dataSourceProperty = new DataSourceProperty();
-        dataSourceProperty.setUrl(url)
-                .setUsername(username)
-                .setPassword(password)
-                .setDriverClassName(driverClass);
+        dataSourceProperty.setUrl(url);
+        dataSourceProperty.setUsername(username);
+        dataSourceProperty.setPassword(password);
+        dataSourceProperty.setDriverClassName(driverClass);
         
         if (StringUtils.isNotBlank(schemaSql)) {
             dataSourceProperty.getInit().setSchema(schemaSql);

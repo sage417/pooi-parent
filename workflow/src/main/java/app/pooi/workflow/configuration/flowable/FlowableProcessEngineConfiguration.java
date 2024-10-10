@@ -1,6 +1,6 @@
 package app.pooi.workflow.configuration.flowable;
 
-import app.pooi.workflow.configuration.flowable.behavior.CustomActivityBehaviorFactory;
+//import app.pooi.workflow.configuration.flowable.behavior.CustomActivityBehaviorFactory;
 import app.pooi.workflow.configuration.flowable.engine.ProcessDefinitionDeploymentCache;
 import app.pooi.workflow.configuration.flowable.engine.WorkflowFlowableEngineEventListener;
 import com.google.common.collect.Lists;
@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 
 @Configuration
-class FlowableProcessEngineConfiguration {
+public class FlowableProcessEngineConfiguration {
 
     @Bean
     public TenantInfoHolder tenantInfoHolder() {
@@ -41,7 +41,7 @@ class FlowableProcessEngineConfiguration {
             conf.setDatabaseSchemaUpdate("true");
             conf.setEnableHistoricTaskLogging(true);
 
-            conf.setActivityBehaviorFactory(new CustomActivityBehaviorFactory());
+//            conf.setActivityBehaviorFactory(new CustomActivityBehaviorFactory());
             // 事件监听
             conf.setEventListeners(Lists.newArrayList(engineEventListener()));
             // 缓存

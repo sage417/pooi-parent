@@ -127,7 +127,7 @@ public class ProcessDefinitionDeploymentCache<T> implements InitializingBean, Di
 
     @Accessors(chain = true)
     @Data
-    static class DeploymentCacheMessage implements Serializable {
+    public static class DeploymentCacheMessage implements Serializable {
 
         private String applicationCode;
 

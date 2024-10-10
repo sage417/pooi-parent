@@ -21,6 +21,10 @@ class TenantAwareDynamicRoutingDataSource extends DynamicRoutingDataSource {
     @Resource
     private List<DynamicDataSourceProvider> providers;
 
+    public TenantAwareDynamicRoutingDataSource(List<DynamicDataSourceProvider> providers) {
+        super(providers);
+    }
+
 
     @Override
     public DataSource determineDataSource() {
