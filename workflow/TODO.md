@@ -1,7 +1,7 @@
 - [x] 事件推送
 - [ ] shardingsphere接入
-- [ ] 动态加签
-- [x] 分布式缓存
+- [ ] 动态加签 app.pooi.workflow.application.UserTaskOperationApplication.injectTask
+- [x] 分布式缓存 app.pooi.workflow.application.UserTaskOperationApplication.injectTask
 - [ ] 分享/传阅
 - [ ] 审批历史/预测功能
 - [ ] 条件自动审批

@@ -18,6 +18,7 @@
         <java.version>21</java.version>
         <guava.version>33.0.0-jre</guava.version>
         <org.mapstruct.version>1.6.2</org.mapstruct.version>
+        <spring-security.version>5.8.13</spring-security.version>
     </properties>
     <dependencies>
 
