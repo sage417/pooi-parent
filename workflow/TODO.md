@@ -1,8 +1,8 @@
 - [x] 事件推送
 - [ ] shardingsphere接入
-- [ ] 动态加签 app.pooi.workflow.application.UserTaskOperationApplication.injectTask
-- [x] 分布式缓存 app.pooi.workflow.application.UserTaskOperationApplication.injectTask
-- [ ] 分享/传阅
+- [x] 动态加签 app.pooi.workflow.application.UserTaskAddSignApplication.addSignTask
+- [x] 分布式缓存 app.pooi.workflow.configuration.flowable.engine.ProcessDefinitionDeploymentCache
+- [ ] 分享/传阅 app.pooi.workflow.application.UserTaskOperationApplication.addCirculate
 - [ ] 审批历史/预测功能
 - [ ] 条件自动审批
 - [ ] 审批人异常处理
