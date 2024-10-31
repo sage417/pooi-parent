@@ -7,13 +7,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@Component
+//@Component
 public class KeycloakLogoutHandler implements LogoutHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(KeycloakLogoutHandler.class);
