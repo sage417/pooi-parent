@@ -8,7 +8,7 @@ spring:
             platform: org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform
   datasource:
     username: sa
-    url: jdbc:h2:file:./keycloak;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:file:./keycloak;AUTO_SERVER=TRUE;NON_KEYWORDS=VALUE
 
 keycloak:
   server:

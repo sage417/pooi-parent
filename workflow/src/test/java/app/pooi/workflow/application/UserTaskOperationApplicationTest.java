@@ -1,6 +1,7 @@
 package app.pooi.workflow.application;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
+import app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport;
 import app.pooi.workflow.conf.TestRedisConfiguration;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
@@ -40,6 +41,9 @@ class UserTaskOperationApplicationTest {
 
     @Autowired
     private UserTaskAddSignApplication userTaskAddSignApplication;
+
+    @Autowired
+    private CommentSupport commentSupport;
 
     @Test
     @SneakyThrows
@@ -82,6 +86,7 @@ class UserTaskOperationApplicationTest {
         assertEquals(2, taskService.createTaskQuery().count());
         assertEquals(0, taskService.createTaskQuery().taskAssignee("target").count());
         assertEquals(1, taskService.createTaskQuery().taskAssignee("userId1").count());
+        assertEquals(1, commentSupport.listByInstanceId(task.getProcessInstanceId()).size());
 
         Task task1 = taskService.createTaskQuery().excludeSubtasks().singleResult();
         assertEquals(task1.getDelegationState(), DelegationState.PENDING);

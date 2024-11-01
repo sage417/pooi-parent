@@ -15,6 +15,7 @@ package app.pooi.workflow.configuration.flowable;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.flowable.common.engine.api.async.AsyncTaskExecutor;
 import org.flowable.common.engine.api.scope.ScopeTypes;
+import org.flowable.common.engine.impl.AbstractEngineConfiguration;
 import org.flowable.common.engine.impl.cfg.IdGenerator;
 import org.flowable.common.engine.impl.cfg.multitenant.TenantInfoHolder;
 import org.flowable.common.engine.impl.persistence.StrongUuidGenerator;
@@ -55,6 +56,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 
 /**
  * Provides sane definitions for the various beans required to be productive with Flowable in Spring.
@@ -116,7 +118,8 @@ public class ProcessEngineAutoConfiguration extends org.flowable.spring.boot.Pro
         SpringProcessEngineConfiguration conf = tenantInfoHolder.getIfUnique() != null ?
                 new MultiSchemaMultiTenantProcessEngineConfiguration(tenantInfoHolder.getIfUnique()) :
                 new SpringProcessEngineConfiguration();
-
+        // force database type = mysql
+        conf.setDatabaseType(AbstractEngineConfiguration.DATABASE_TYPE_MYSQL);
 
         List<Resource> resources = this.discoverDeploymentResources(
                 flowableProperties.getProcessDefinitionLocationPrefix(),

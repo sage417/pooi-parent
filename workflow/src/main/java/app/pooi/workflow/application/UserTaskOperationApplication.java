@@ -1,6 +1,7 @@
 package app.pooi.workflow.application;
 
-import app.pooi.workflow.applicationsupport.CommentSupport;
+import app.pooi.workflow.applicationsupport.workflowcomment.AddCommentBO;
+import app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -46,8 +47,12 @@ public class UserTaskOperationApplication {
         }
 
         taskService.complete(taskId, variables);
-        // TODO record comment
+
         processParentTask(task.getParentTaskId(), variables);
+        // record comment
+        AddCommentBO addCommentBO = commentSupport.createFromTask(task);
+        addCommentBO.setType("COMPLETE_TASK");
+        commentSupport.recordComment(addCommentBO);
     }
 
     private void processParentTask(String parentTaskId, Map<String, Object> variables) {
@@ -63,7 +68,6 @@ public class UserTaskOperationApplication {
             log.info("parent task assignee: {}", parentTask.getAssignee());
             if (Const.AFTER_ADD_SIGN.equals(parentTask.getAssignee())) {
                 taskService.complete(parentTask.getId(), variables);
-                // TODO record comment
             }
         }
     }

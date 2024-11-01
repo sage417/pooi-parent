@@ -1,6 +1,7 @@
 package app.pooi.workflow.application;
 
-import app.pooi.workflow.applicationsupport.CommentSupport;
+import app.pooi.workflow.applicationsupport.workflowcomment.AddCommentBO;
+import app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport;
 import org.apache.commons.collections4.CollectionUtils;
 import org.flowable.engine.TaskService;
 import org.flowable.task.api.Task;
@@ -14,8 +15,6 @@ import java.util.stream.Collectors;
 
 @Component
 public class UserTaskAddSignApplication {
-
-
 
     @Resource
     private TaskService taskService;
@@ -42,8 +41,9 @@ public class UserTaskAddSignApplication {
         List<Task> subTasks = userIds.stream().map(uId -> createSubTask(task, uId)).collect(Collectors.toList());
         taskService.bulkSaveTasks(subTasks);
 
-        // TODO record comment
-        commentSupport.addComment();
+        AddCommentBO addCommentBO = commentSupport.createFromTask(task);
+        addCommentBO.setType("ADD_SIGN");
+        commentSupport.recordComment(addCommentBO);
     }
 
     private Task createSubTask(Task parentTask, String assignee) {
