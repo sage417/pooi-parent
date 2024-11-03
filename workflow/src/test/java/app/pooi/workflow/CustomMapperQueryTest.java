@@ -9,8 +9,9 @@ import org.flowable.engine.test.Deployment;
 import org.flowable.spring.impl.test.FlowableSpringExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.annotation.Resource;
 
 import static app.pooi.workflow.TenantInfoHolderExtension.TENANT_APP_1;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CustomMapperQueryTest {
 
 
-    @Autowired
+    @Resource
     private ProcessEngineConfiguration processEngineConfiguration;
 
     @SneakyThrows

@@ -3,15 +3,16 @@
 - [x] 动态加签 app.pooi.workflow.application.UserTaskAddSignApplication.addSignTask
 - [x] 分布式缓存 app.pooi.workflow.configuration.flowable.engine.ProcessDefinitionDeploymentCache
 - [ ] 分享/传阅 app.pooi.workflow.application.UserTaskOperationApplication.addCirculate
-- [ ] 退回
-- [ ] 审批历史/预测功能
-- [ ] 条件自动审批
+- [ ] 审批历史 app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport
+- [x] 任务回退/跳转 app.pooi.workflow.application.ProcessInstanceMoveApplication.rollback
+- [x] 任务挂起 app.pooi.workflow.application.UserTaskSuspendApplication
+- [ ] 任务条件自动审批
+- [ ] 任务代理/自动移交
 - [ ] 审批人异常处理
-- [ ] 标题自动计算
+- [ ] 任务超时处理
+- [ ] 办理人员规则/审批人对接人员/组织关系
+- [ ] 流程流转显示
+- [ ] ~~标题自动计算~~
 - [ ] 多语言
-- [ ] 超时处理
-- [ ] 代理/自动移交
-- [ ] 回退/跳转
-- [ ] 沙箱测试
+- [ ] 测试
 - [x] 对接iam
-- [ ] 办理人规则/审批人对接人员组织关系

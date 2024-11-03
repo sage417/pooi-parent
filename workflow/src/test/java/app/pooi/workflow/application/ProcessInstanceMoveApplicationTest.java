@@ -12,7 +12,6 @@ import org.flowable.spring.impl.test.FlowableSpringExtension;
 import org.flowable.task.api.Task;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
@@ -28,19 +27,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(classes = {TestRedisConfiguration.class})
 class ProcessInstanceMoveApplicationTest {
 
-    @Autowired
+    @Resource
     private RuntimeService runtimeService;
 
-    @Autowired
+    @Resource
     private TaskService taskService;
 
-    @Autowired
-    private UserTaskOperationApplication userTaskOperationApplication;
-
-    @Autowired
-    private UserTaskAddSignApplication userTaskAddSignApplication;
-
-    @Autowired
+    @Resource
     private CommentSupport commentSupport;
 
     @Resource

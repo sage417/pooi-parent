@@ -16,9 +16,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.redisson.api.RFuture;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -32,13 +32,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(FlowableSpringExtension.class)
 @SpringBootTest(classes = {TestRedisConfiguration.class})
 class ArticleWorkflowIntegrationTest {
-    @Autowired
+    @Resource
     private RuntimeService runtimeService;
-    @Autowired
+    @Resource
     private TaskService taskService;
-    @Autowired
+    @Resource
     private RedissonClient redissonClient;
-    @Autowired
+    @Resource
     private EventRecordRepository eventRecordRepository;
 
     @SneakyThrows

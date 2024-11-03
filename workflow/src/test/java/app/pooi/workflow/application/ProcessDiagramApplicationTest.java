@@ -10,9 +10,9 @@ import org.flowable.engine.test.Deployment;
 import org.flowable.spring.impl.test.FlowableSpringExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 import static app.pooi.workflow.TenantInfoHolderExtension.TENANT_APP_1;
@@ -23,7 +23,7 @@ import static app.pooi.workflow.TenantInfoHolderExtension.TENANT_APP_1;
 @SpringBootTest(classes = {TestRedisConfiguration.class})
 class ProcessDiagramApplicationTest {
 
-    @Autowired
+    @Resource
     private ProcessDiagramApplication processDiagramApplication;
 
     @Test
