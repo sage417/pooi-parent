@@ -4,6 +4,7 @@ import app.pooi.workflow.configuration.flowable.behavior.CustomActivityBehaviorF
 import app.pooi.workflow.configuration.flowable.engine.ProcessDefinitionDeploymentCache;
 import app.pooi.workflow.configuration.flowable.engine.WorkflowFlowableEngineEventListener;
 import com.google.common.collect.Lists;
+import org.flowable.common.engine.impl.AbstractEngineConfiguration;
 import org.flowable.common.engine.impl.cfg.multitenant.TenantInfoHolder;
 import org.flowable.common.engine.impl.persistence.deploy.DeploymentCache;
 import org.flowable.engine.delegate.event.AbstractFlowableEngineEventListener;
@@ -37,6 +38,8 @@ class FlowableProcessEngineConfiguration {
     public EngineConfigurationConfigurer<SpringProcessEngineConfiguration> configurationConfigurer(DataSource dataSource) {
         return conf -> {
             // 注意某些属性不生效 如disable idm
+            // force database type = mysql
+            conf.setDatabaseType(AbstractEngineConfiguration.DATABASE_TYPE_MYSQL);
             conf.setDataSource(dataSource);
             conf.setDatabaseSchemaUpdate("true");
             conf.setEnableHistoricTaskLogging(true);
