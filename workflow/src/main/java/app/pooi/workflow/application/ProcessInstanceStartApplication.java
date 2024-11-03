@@ -6,17 +6,18 @@ import org.flowable.engine.RuntimeService;
 import org.flowable.engine.impl.persistence.deploy.DeploymentManager;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.engine.repository.ProcessDefinition;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 @Slf4j
 @Component
 public class ProcessInstanceStartApplication {
 
-    @Autowired
+    @Resource
     private RuntimeService runtimeService;
 
-    @Autowired
+    @Resource
     private RepositoryService repositoryService;
 
 
