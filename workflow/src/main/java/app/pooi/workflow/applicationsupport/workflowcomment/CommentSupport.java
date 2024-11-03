@@ -2,6 +2,8 @@ package app.pooi.workflow.applicationsupport.workflowcomment;
 
 import app.pooi.workflow.repository.workflow.CommentDO;
 import app.pooi.workflow.repository.workflow.CommentRepository;
+import org.flowable.engine.TaskService;
+import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
 import org.springframework.stereotype.Component;
 
@@ -15,12 +17,23 @@ public class CommentSupport {
     private CommentRepository commentRepository;
 
     @Resource
+    private TaskService taskService;
+
+    @Resource
     private CommentConvert commentConvert;
 
     public AddCommentBO createFromTask(Task task) {
         AddCommentBO addCommentBO = new AddCommentBO();
         commentConvert.updateFromTask(addCommentBO, task);
         return addCommentBO;
+    }
+
+    public AddCommentBO createFormExecution(Execution execution) {
+        Task task = taskService.createTaskQuery().executionId(execution.getId()).singleResult();
+        if (task != null) {
+            return createFromTask(task);
+        }
+        return commentConvert.convert2DO(execution);
     }
 
 
