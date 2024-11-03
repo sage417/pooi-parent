@@ -1,8 +1,27 @@
+/*
+ * Copyright (c) 2024. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+ * Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+ * Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+ * Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+ * Vestibulum commodo. Ut rhoncus gravida arcu.
+ */
+
 package app.pooi.workflow.configuration.flowable.behavior;
 
+import app.pooi.common.util.CollectorsUtil;
+import app.pooi.workflow.configuration.flowable.props.FlowableCustomProperties;
+import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigDO;
+import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigRepository;
 import app.pooi.workflow.util.BpmnModelUtil;
+import app.pooi.workflow.util.TaskEntityUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.FlowNode;
 import org.flowable.bpmn.model.UserTask;
@@ -25,20 +44,35 @@ import org.flowable.engine.impl.context.BpmnOverrideContext;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.util.BpmnLoggingSessionUtil;
 import org.flowable.engine.impl.util.CommandContextUtil;
+import org.flowable.engine.impl.util.IdentityLinkUtil;
 import org.flowable.engine.impl.util.TaskHelper;
 import org.flowable.engine.interceptor.CreateUserTaskAfterContext;
 import org.flowable.engine.interceptor.CreateUserTaskBeforeContext;
 import org.flowable.engine.interceptor.MigrationContext;
+import org.flowable.identitylink.api.IdentityLinkType;
+import org.flowable.identitylink.service.IdentityLinkService;
+import org.flowable.identitylink.service.impl.persistence.entity.IdentityLinkEntity;
 import org.flowable.task.service.TaskService;
 import org.flowable.task.service.event.impl.FlowableTaskEventBuilder;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
-    public CustomUserTaskActivityBehavior(UserTask userTask) {
+
+    private ApprovalDelegateConfigRepository approvalDelegateConfigRepository;
+
+    private FlowableCustomProperties flowableCustomProperties;
+
+    public CustomUserTaskActivityBehavior(UserTask userTask,
+                                          ApprovalDelegateConfigRepository approvalDelegateConfigRepository,
+                                          FlowableCustomProperties flowableCustomProperties) {
         super(userTask);
+        this.approvalDelegateConfigRepository = approvalDelegateConfigRepository;
+        this.flowableCustomProperties = flowableCustomProperties;
     }
 
     @Override
@@ -128,6 +162,29 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
             handleAssignments(taskService, beforeContext.getAssignee(), beforeContext.getOwner(), beforeContext.getCandidateUsers(),
                     beforeContext.getCandidateGroups(), task, expressionManager, execution, processEngineConfiguration);
 
+            ApprovalDelegateResult approvalDelegateResult;
+            if (BooleanUtils.isTrue(flowableCustomProperties.getApprovalDelegate())
+                    && (approvalDelegateResult = satisfyApprovalDelegate(task, (ExecutionEntity) execution, commandContext)).needChangeAssignee) {
+                // A -> A1, (B1, ...
+                TaskHelper.changeTaskAssignee(task, "");
+
+                Set<String> candidatesToAdd = approvalDelegateResult.getCandidatesToAdd();
+                Set<String> candidatesToRemove = approvalDelegateResult.getCandidatesToRemove();
+
+                for (String userId : candidatesToRemove) {
+                    IdentityLinkUtil.deleteTaskIdentityLinks(task, userId, null, IdentityLinkType.CANDIDATE);
+                }
+
+                IdentityLinkService identityLinkService = processEngineConfiguration.getIdentityLinkServiceConfiguration()
+                        .getIdentityLinkService();
+                List<IdentityLinkEntity> identityLinkEntities = identityLinkService.addCandidateUsers(task.getId(), candidatesToAdd);
+
+                if (identityLinkEntities != null && !identityLinkEntities.isEmpty()) {
+                    IdentityLinkUtil.handleTaskIdentityLinkAdditions(task, identityLinkEntities);
+                }
+            }
+
+
             if (processEngineConfiguration.getCreateUserTaskInterceptor() != null) {
                 CreateUserTaskAfterContext afterContext = new CreateUserTaskAfterContext(userTask, task, execution);
                 processEngineConfiguration.getCreateUserTaskInterceptor().afterCreateUserTask(afterContext);
@@ -154,14 +211,19 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
                     execution.setVariable(idVariableName, task.getId());
                 }
             }
-            if (handleIfAutoComplete(task, execution, commandContext)) {
+
+
+            if (satisfyAutoCompleteCond(task, (ExecutionEntity) execution, commandContext)) {
                 TaskHelper.completeTask(task, null, null, null, null, commandContext);
             }
+
+
         } else {
             TaskHelper.deleteTask(task, null, false, false, false); // false: no events fired for skipped user task
             leave(execution);
         }
     }
+
 
     protected void preHandleAssignments(CreateUserTaskBeforeContext beforeContext, ExpressionManager expressionManager, TaskEntity task, DelegateExecution execution) {
         if (StringUtils.isNotEmpty(beforeContext.getAssignee())) {
@@ -177,7 +239,182 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         }
     }
 
-    protected boolean handleIfAutoComplete(TaskEntity task, DelegateExecution execution, CommandContext commandContext) {
+    protected ApprovalDelegateResult satisfyApprovalDelegate(TaskEntity task, ExecutionEntity execution, CommandContext commandContext) {
+
+        List<ApprovalDelegateConfigDO> delegateConfigDOS = this.approvalDelegateConfigRepository
+                .selectValidByProcessDefinitionKeyAndTenantId(execution.getProcessDefinitionKey(), task.getTenantId());
+        if (CollectionUtils.isEmpty(delegateConfigDOS)) {
+            return ApprovalDelegateResult.NO_NEED_CHANGE_ASSIGNEE_RESULT;
+        }
+
+        // agent root
+        ApprovalDelegateNode rootDelegateNode = getApprovalDelegateNode(delegateConfigDOS);
+
+        // 记录原始信息
+        Set<String> assigneeAndCandidates = TaskEntityUtil.getAssigneeAndCandidates(task);
+        for (String account : assigneeAndCandidates) {
+            ApprovalDelegateNode approvalDelegateNode = new ApprovalDelegateNode(account);
+            approvalDelegateNode.addChild(ApprovalDelegateNode.ORIGINAL());
+            rootDelegateNode.addChild(approvalDelegateNode);
+        }
+
+
+        Map<String, ApprovalDelegateConfigDO> delegateConfigDOMap = delegateConfigDOS.stream().collect(Collectors.toMap(
+                ApprovalDelegateConfigDO::getDelegate, Function.identity(), CollectorsUtil.useFirst()));
+
+        Set<String> delegates = delegateConfigDOMap.keySet();
+
+
+        Sets.SetView<String> hitDelegates = Sets.intersection(delegates, assigneeAndCandidates);
+        if (hitDelegates.isEmpty()) {
+            return ApprovalDelegateResult.NO_NEED_CHANGE_ASSIGNEE_RESULT;
+        }
+
+//        List<ApprovalDelegateNode> approvalDelegateNodes = assigneeAndCandidates.stream().map(ApprovalDelegateNode::new).collect(Collectors.toList());
+//        Map<String, ApprovalDelegateNode> rootDelegateNodeMap = approvalDelegateNodes.stream().collect(Collectors.toMap(ApprovalDelegateNode::getCurrent, Function.identity()));
+
+        Set<String> agents = hitDelegates.stream().map(delegateConfigDOMap::get)
+                .map(ApprovalDelegateConfigDO::getAgents)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+
+//        for (String missAssignee : Sets.difference(assigneeAndCandidates, delegates)) {
+//
+//        }
+        return new ApprovalDelegateResult().setNeedChangeAssignee(true)
+                .setCandidatesToAdd(agents).setCandidatesToRemove(hitDelegates);
+    }
+
+
+    private ApprovalDelegateNode getApprovalDelegateNode(List<ApprovalDelegateConfigDO> delegateConfigDOS) {
+        ApprovalDelegateNode rootDelegateNode = new ApprovalDelegateNode("__ROOT__");
+
+        for (ApprovalDelegateConfigDO delegateConfigDO : delegateConfigDOS) {
+
+            ApprovalDelegateNode approvalDelegateNode = find(rootDelegateNode, delegateConfigDO.getDelegate())
+                    .orElseGet(() -> new ApprovalDelegateNode(delegateConfigDO.getDelegate()));
+            // set parent as root
+            if (approvalDelegateNode.getIncoming().isEmpty()) {
+                approvalDelegateNode.addParent(rootDelegateNode);
+                rootDelegateNode.addChild(approvalDelegateNode);
+            }
+            // process child
+            for (String agent : delegateConfigDO.getAgents()) {
+                ApprovalDelegateNode child = find(rootDelegateNode, agent).orElseGet(() -> new ApprovalDelegateNode(agent));
+                if (child.getIncoming().contains(rootDelegateNode)) {
+                    child.removeParent(rootDelegateNode);
+                    rootDelegateNode.removeChild(child);
+                }
+                child.addParent(approvalDelegateNode);
+                approvalDelegateNode.addChild(child);
+            }
+        }
+        return rootDelegateNode;
+    }
+
+
+    private Optional<ApprovalDelegateNode> find(ApprovalDelegateNode root, String find) {
+
+        Deque<ApprovalDelegateNode> q = new ArrayDeque<>();
+        q.push(root);
+
+        while (!q.isEmpty()) {
+            ApprovalDelegateNode currentNode = q.pop();
+            if (currentNode.getCurrent().equals(find)) {
+                return Optional.of(currentNode);
+            }
+
+            for (ApprovalDelegateNode approvalDelegateNode : currentNode.getOutgoing()) {
+                q.push((approvalDelegateNode));
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    @Accessors(chain = true)
+    @Getter
+    @Setter
+    protected static class ApprovalDelegateResult {
+
+        static ApprovalDelegateResult NO_NEED_CHANGE_ASSIGNEE_RESULT = new ApprovalDelegateResult().setNeedChangeAssignee(false);
+
+        private boolean needChangeAssignee;
+
+        private Set<String> candidatesToAdd;
+
+        private Set<String> candidatesToRemove;
+    }
+
+    @Accessors(chain = true)
+    @Getter
+    protected static class ApprovalDelegateNode {
+
+        private String current;
+
+        private Set<ApprovalDelegateNode> incoming;
+
+        private Set<ApprovalDelegateNode> outgoing;
+
+        private ApprovalDelegateNode() {
+        }
+
+        public ApprovalDelegateNode(String current) {
+            this.current = current;
+            this.outgoing = new HashSet<>();
+        }
+
+        public ApprovalDelegateNode addParent(ApprovalDelegateNode child) {
+            this.incoming.add(child);
+            return this;
+        }
+
+        public ApprovalDelegateNode removeParent(ApprovalDelegateNode child) {
+            this.incoming.remove(child);
+            return this;
+        }
+
+        public ApprovalDelegateNode addChild(ApprovalDelegateNode child) {
+            this.outgoing.add(child);
+            return this;
+        }
+
+        public ApprovalDelegateNode removeChild(ApprovalDelegateNode child) {
+            this.outgoing.remove(child);
+            return this;
+        }
+
+        public static ApprovalDelegateNode ORIGINAL() {
+            ApprovalDelegateNode delegateNode = new ApprovalDelegateNode();
+            delegateNode.current = "__ORIGINAL__";
+            delegateNode.outgoing = Collections.emptySet();
+            return delegateNode;
+        }
+
+        public static ApprovalDelegateNode copy(ApprovalDelegateNode source) {
+            ApprovalDelegateNode approvalDelegateNode = new ApprovalDelegateNode(source.getCurrent());
+            approvalDelegateNode.getOutgoing().addAll(source.getOutgoing());
+            return approvalDelegateNode;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ApprovalDelegateNode that = (ApprovalDelegateNode) o;
+
+            return current.equals(that.current);
+        }
+
+        @Override
+        public int hashCode() {
+            return current.hashCode();
+        }
+    }
+
+
+    protected boolean satisfyAutoCompleteCond(TaskEntity task, ExecutionEntity execution, CommandContext commandContext) {
 //        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
         BpmnModelUtil.findPreFlowElement(commandContext, ((FlowNode) execution.getCurrentFlowElement()), UserTask.class);
         return false;

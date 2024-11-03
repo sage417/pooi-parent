@@ -6,8 +6,8 @@
 - [ ] 审批历史 app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport
 - [x] 任务回退/跳转 app.pooi.workflow.application.ProcessInstanceMoveApplication.rollback
 - [x] 任务挂起 app.pooi.workflow.application.UserTaskSuspendApplication
+- [ ] 审批全权委托/协助
 - [ ] 任务条件自动审批
-- [ ] 任务代理/自动移交
 - [ ] 审批人异常处理
 - [ ] 任务超时处理
 - [ ] 办理人员规则/审批人对接人员/组织关系

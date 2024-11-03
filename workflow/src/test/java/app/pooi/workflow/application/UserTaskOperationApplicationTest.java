@@ -93,6 +93,7 @@ class UserTaskOperationApplicationTest {
 
         List<Task> subTasks = taskService.getSubTasks(task1.getId());
         for (Task subTask : subTasks) {
+            assertEquals(taskService.getIdentityLinksForTask(subTask.getId()).size(), 1);
             userTaskOperationApplication.completeTask(subTask.getId(), variables);
         }
         assertEquals(0, taskService.createTaskQuery().count());
