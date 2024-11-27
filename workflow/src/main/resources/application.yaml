@@ -11,8 +11,8 @@ spring.datasource.dynamic:
         data: classpath*:sql/data.sql
 
 spring.redis:
-  host: localhost
-  port: 6370
+  host: redis.pooi.app
+  port: 6379
 
 spring.dynamic.tp:
   enabled: true                               # 是否启用 dynamictp，默认true

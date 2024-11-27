@@ -15,8 +15,8 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 spring.redis:
-  host: localhost
-  port: 6370
+  host: redis.pooi.app
+  port: 6379
 
 spring.dynamic.tp:
   enabled: true                               # 是否启用 dynamictp，默认true

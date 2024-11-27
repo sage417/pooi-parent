@@ -8,10 +8,11 @@
 
 package app.pooi.workflow.configuration.flowable.behavior;
 
-import app.pooi.common.util.CollectorsUtil;
 import app.pooi.workflow.configuration.flowable.props.FlowableCustomProperties;
 import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigDO;
 import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigRepository;
+import app.pooi.workflow.repository.workflow.CommentDO;
+import app.pooi.workflow.repository.workflow.CommentRepository;
 import app.pooi.workflow.util.BpmnModelUtil;
 import app.pooi.workflow.util.TaskEntityUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -56,14 +57,18 @@ import org.flowable.task.service.TaskService;
 import org.flowable.task.service.event.impl.FlowableTaskEventBuilder;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
     private ApprovalDelegateConfigRepository approvalDelegateConfigRepository;
+
+    private CommentRepository commentRepository;
 
     private FlowableCustomProperties flowableCustomProperties;
 
@@ -163,8 +168,8 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
                     beforeContext.getCandidateGroups(), task, expressionManager, execution, processEngineConfiguration);
 
             ApprovalDelegateResult approvalDelegateResult;
-            if (BooleanUtils.isTrue(flowableCustomProperties.getApprovalDelegate())
-                    && (approvalDelegateResult = satisfyApprovalDelegate(task, (ExecutionEntity) execution, commandContext)).needChangeAssignee) {
+            if (BooleanUtils.isTrue(flowableCustomProperties.getApprovalDelegateEnable())
+                    && (approvalDelegateResult = satisfyApprovalDelegate(task, (ExecutionEntity) execution, commandContext)).isNeedDoDelegate()) {
                 // A -> A1, (B1, ...
                 TaskHelper.changeTaskAssignee(task, "");
 
@@ -250,39 +255,28 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         // agent root
         ApprovalDelegateNode rootDelegateNode = getApprovalDelegateNode(delegateConfigDOS);
 
-        // 记录原始信息
+        // original assignees
         Set<String> assigneeAndCandidates = TaskEntityUtil.getAssigneeAndCandidates(task);
+
+        ApprovalDelegateNode original = ApprovalDelegateNode.ORIGINAL();
+
         for (String account : assigneeAndCandidates) {
             ApprovalDelegateNode approvalDelegateNode = new ApprovalDelegateNode(account);
-            approvalDelegateNode.addChild(ApprovalDelegateNode.ORIGINAL());
-            rootDelegateNode.addChild(approvalDelegateNode);
+            original.addChild(approvalDelegateNode);
         }
 
-
-        Map<String, ApprovalDelegateConfigDO> delegateConfigDOMap = delegateConfigDOS.stream().collect(Collectors.toMap(
-                ApprovalDelegateConfigDO::getDelegate, Function.identity(), CollectorsUtil.useFirst()));
-
-        Set<String> delegates = delegateConfigDOMap.keySet();
-
-
-        Sets.SetView<String> hitDelegates = Sets.intersection(delegates, assigneeAndCandidates);
-        if (hitDelegates.isEmpty()) {
-            return ApprovalDelegateResult.NO_NEED_CHANGE_ASSIGNEE_RESULT;
+        for (String account : assigneeAndCandidates) {
+            HashMap<ApprovalDelegateNode, ApprovalDelegateNode> copiedNodes = new HashMap<>();
+            Optional<ApprovalDelegateNode> optionalApprovalDelegateNode = ApprovalDelegateNode.find(rootDelegateNode, account);
+            optionalApprovalDelegateNode.ifPresent(approvalDelegateNode -> approvalDelegateNode.copyDownwardsByBFS(copiedNodes));
         }
+        Set<ApprovalDelegateNode> leafNodes = original.findLeafNodes();
+        Set<String> assigneeAfterDelegate = leafNodes.stream().map(ApprovalDelegateNode::getCurrent).collect(Collectors.toSet());
 
-//        List<ApprovalDelegateNode> approvalDelegateNodes = assigneeAndCandidates.stream().map(ApprovalDelegateNode::new).collect(Collectors.toList());
-//        Map<String, ApprovalDelegateNode> rootDelegateNodeMap = approvalDelegateNodes.stream().collect(Collectors.toMap(ApprovalDelegateNode::getCurrent, Function.identity()));
 
-        Set<String> agents = hitDelegates.stream().map(delegateConfigDOMap::get)
-                .map(ApprovalDelegateConfigDO::getAgents)
-                .flatMap(Collection::stream)
-                .collect(Collectors.toSet());
-
-//        for (String missAssignee : Sets.difference(assigneeAndCandidates, delegates)) {
-//
-//        }
-        return new ApprovalDelegateResult().setNeedChangeAssignee(true)
-                .setCandidatesToAdd(agents).setCandidatesToRemove(hitDelegates);
+        return new ApprovalDelegateResult().setNeedDoDelegate(true)
+                .setCandidatesToAdd(Sets.difference(assigneeAfterDelegate, assigneeAndCandidates))
+                .setCandidatesToRemove(Sets.difference(assigneeAndCandidates, assigneeAfterDelegate));
     }
 
 
@@ -291,16 +285,11 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
         for (ApprovalDelegateConfigDO delegateConfigDO : delegateConfigDOS) {
 
-            ApprovalDelegateNode approvalDelegateNode = find(rootDelegateNode, delegateConfigDO.getDelegate())
-                    .orElseGet(() -> new ApprovalDelegateNode(delegateConfigDO.getDelegate()));
-            // set parent as root
-            if (approvalDelegateNode.getIncoming().isEmpty()) {
-                approvalDelegateNode.addParent(rootDelegateNode);
-                rootDelegateNode.addChild(approvalDelegateNode);
-            }
+            ApprovalDelegateNode approvalDelegateNode = ApprovalDelegateNode.find(rootDelegateNode, delegateConfigDO.getDelegate())
+                    .orElseGet(() -> createApprovalDelegateNode(delegateConfigDO, rootDelegateNode));
             // process child
             for (String agent : delegateConfigDO.getAgents()) {
-                ApprovalDelegateNode child = find(rootDelegateNode, agent).orElseGet(() -> new ApprovalDelegateNode(agent));
+                ApprovalDelegateNode child = ApprovalDelegateNode.find(rootDelegateNode, agent).orElseGet(() -> new ApprovalDelegateNode(agent));
                 if (child.getIncoming().contains(rootDelegateNode)) {
                     child.removeParent(rootDelegateNode);
                     rootDelegateNode.removeChild(child);
@@ -312,111 +301,40 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         return rootDelegateNode;
     }
 
-
-    private Optional<ApprovalDelegateNode> find(ApprovalDelegateNode root, String find) {
-
-        Deque<ApprovalDelegateNode> q = new ArrayDeque<>();
-        q.push(root);
-
-        while (!q.isEmpty()) {
-            ApprovalDelegateNode currentNode = q.pop();
-            if (currentNode.getCurrent().equals(find)) {
-                return Optional.of(currentNode);
-            }
-
-            for (ApprovalDelegateNode approvalDelegateNode : currentNode.getOutgoing()) {
-                q.push((approvalDelegateNode));
-            }
-        }
-
-        return Optional.empty();
+    private static ApprovalDelegateNode createApprovalDelegateNode(ApprovalDelegateConfigDO delegateConfigDO, ApprovalDelegateNode rootDelegateNode) {
+        ApprovalDelegateNode newApprovalDelegateNode = new ApprovalDelegateNode(delegateConfigDO.getDelegate());
+        // set parent as root
+        newApprovalDelegateNode.addParent(rootDelegateNode);
+        rootDelegateNode.addChild(newApprovalDelegateNode);
+        return newApprovalDelegateNode;
     }
+
 
     @Accessors(chain = true)
     @Getter
     @Setter
     protected static class ApprovalDelegateResult {
 
-        static ApprovalDelegateResult NO_NEED_CHANGE_ASSIGNEE_RESULT = new ApprovalDelegateResult().setNeedChangeAssignee(false);
+        static ApprovalDelegateResult NO_NEED_CHANGE_ASSIGNEE_RESULT = new ApprovalDelegateResult().setNeedDoDelegate(false);
 
-        private boolean needChangeAssignee;
+        private boolean needDoDelegate;
 
         private Set<String> candidatesToAdd;
 
         private Set<String> candidatesToRemove;
     }
 
-    @Accessors(chain = true)
-    @Getter
-    protected static class ApprovalDelegateNode {
-
-        private String current;
-
-        private Set<ApprovalDelegateNode> incoming;
-
-        private Set<ApprovalDelegateNode> outgoing;
-
-        private ApprovalDelegateNode() {
-        }
-
-        public ApprovalDelegateNode(String current) {
-            this.current = current;
-            this.outgoing = new HashSet<>();
-        }
-
-        public ApprovalDelegateNode addParent(ApprovalDelegateNode child) {
-            this.incoming.add(child);
-            return this;
-        }
-
-        public ApprovalDelegateNode removeParent(ApprovalDelegateNode child) {
-            this.incoming.remove(child);
-            return this;
-        }
-
-        public ApprovalDelegateNode addChild(ApprovalDelegateNode child) {
-            this.outgoing.add(child);
-            return this;
-        }
-
-        public ApprovalDelegateNode removeChild(ApprovalDelegateNode child) {
-            this.outgoing.remove(child);
-            return this;
-        }
-
-        public static ApprovalDelegateNode ORIGINAL() {
-            ApprovalDelegateNode delegateNode = new ApprovalDelegateNode();
-            delegateNode.current = "__ORIGINAL__";
-            delegateNode.outgoing = Collections.emptySet();
-            return delegateNode;
-        }
-
-        public static ApprovalDelegateNode copy(ApprovalDelegateNode source) {
-            ApprovalDelegateNode approvalDelegateNode = new ApprovalDelegateNode(source.getCurrent());
-            approvalDelegateNode.getOutgoing().addAll(source.getOutgoing());
-            return approvalDelegateNode;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            ApprovalDelegateNode that = (ApprovalDelegateNode) o;
-
-            return current.equals(that.current);
-        }
-
-        @Override
-        public int hashCode() {
-            return current.hashCode();
-        }
-    }
-
 
     protected boolean satisfyAutoCompleteCond(TaskEntity task, ExecutionEntity execution, CommandContext commandContext) {
+        // 自动审批的情况
+        // 之前审批过 (不包含加签)
+        // 前一个人工任务审批过
 //        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
-        BpmnModelUtil.findPreFlowElement(commandContext, ((FlowNode) execution.getCurrentFlowElement()), UserTask.class);
+        UserTask preFlowElement = BpmnModelUtil.findPreFlowElement(commandContext, ((FlowNode) execution.getCurrentFlowElement()), UserTask.class);
+
+        List<CommentDO> commentDOS = commentRepository.listByInstanceId(execution.getProcessInstanceId());
+
+
         return false;
     }
 }

@@ -18,5 +18,5 @@ public class FlowableCustomProperties {
 
     @Getter
     @Setter
-    private Boolean approvalDelegate = Boolean.TRUE;
+    private Boolean approvalDelegateEnable = Boolean.TRUE;
 }
