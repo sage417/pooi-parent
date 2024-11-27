@@ -78,7 +78,8 @@ class JdbcDynamicDataSourceProvider extends AbstractJdbcDataSourceProvider {
         dataSourceProperty.setUrl(url)
                 .setUsername(username)
                 .setPassword(password)
-                .setDriverClassName(driverClass);
+                .setDriverClassName(driverClass)
+                .setLazy(Boolean.FALSE);
         
         if (StringUtils.isNotBlank(schemaSql)) {
             dataSourceProperty.getInit().setSchema(schemaSql);
