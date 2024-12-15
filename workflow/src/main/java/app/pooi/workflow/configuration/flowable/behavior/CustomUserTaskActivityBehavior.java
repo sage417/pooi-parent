@@ -169,7 +169,7 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
             ApprovalDelegateResult approvalDelegateResult;
             if (BooleanUtils.isTrue(flowableCustomProperties.getApprovalDelegateEnable())
-                    && (approvalDelegateResult = satisfyApprovalDelegate(task, (ExecutionEntity) execution, commandContext)).isNeedDoDelegate()) {
+                    && (approvalDelegateResult = satisfyApprovalDelegate((ExecutionEntity) execution, TaskEntityUtil.getAssigneeAndCandidates(task), task.getTenantId())).isNeedDoDelegate()) {
                 // A -> A1, (B1, ...
                 TaskHelper.changeTaskAssignee(task, "");
 
@@ -244,10 +244,10 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         }
     }
 
-    protected ApprovalDelegateResult satisfyApprovalDelegate(TaskEntity task, ExecutionEntity execution, CommandContext commandContext) {
+    protected ApprovalDelegateResult satisfyApprovalDelegate(ExecutionEntity execution, Set<String> assigneeAndCandidates, String tenantId) {
 
         List<ApprovalDelegateConfigDO> delegateConfigDOS = this.approvalDelegateConfigRepository
-                .selectValidByProcessDefinitionKeyAndTenantId(execution.getProcessDefinitionKey(), task.getTenantId());
+                .selectValidByProcessDefinitionKeyAndTenantId(execution.getProcessDefinitionKey(), tenantId);
         if (CollectionUtils.isEmpty(delegateConfigDOS)) {
             return ApprovalDelegateResult.NO_NEED_CHANGE_ASSIGNEE_RESULT;
         }
@@ -256,7 +256,6 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         ApprovalDelegateNode rootDelegateNode = getApprovalDelegateNode(delegateConfigDOS);
 
         // original assignees
-        Set<String> assigneeAndCandidates = TaskEntityUtil.getAssigneeAndCandidates(task);
 
         ApprovalDelegateNode original = ApprovalDelegateNode.ORIGINAL();
 
@@ -273,10 +272,11 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         Set<ApprovalDelegateNode> leafNodes = original.findLeafNodes();
         Set<String> assigneeAfterDelegate = leafNodes.stream().map(ApprovalDelegateNode::getCurrent).collect(Collectors.toSet());
 
-
-        return new ApprovalDelegateResult().setNeedDoDelegate(true)
-                .setCandidatesToAdd(Sets.difference(assigneeAfterDelegate, assigneeAndCandidates))
-                .setCandidatesToRemove(Sets.difference(assigneeAndCandidates, assigneeAfterDelegate));
+        Sets.SetView<String> addDiff = Sets.difference(assigneeAfterDelegate, assigneeAndCandidates);
+        Sets.SetView<String> removeDiff = Sets.difference(assigneeAndCandidates, assigneeAfterDelegate);
+        return new ApprovalDelegateResult().setNeedDoDelegate(!addDiff.isEmpty() || !removeDiff.isEmpty())
+                .setCandidatesToAdd(addDiff)
+                .setCandidatesToRemove(removeDiff);
     }
 
 
