@@ -17,6 +17,5 @@ public class MeController {
                 auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
     }
 
-    public record UserInfoDto(String name, List<String> roles) {
-    }
+    public record UserInfoDto(String name, List<String> roles) {}
 }

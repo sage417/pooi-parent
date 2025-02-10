@@ -25,12 +25,10 @@ import java.util.Optional;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    private static final String GROUPS = "groups";
-    private static final String REALM_ACCESS_CLAIM = "realm_access";
-    private static final String ROLES_CLAIM = "roles";
+    public static final String REALM_ACCESS_CLAIM = "realm_access";
+    public static final String ROLES_CLAIM = "roles";
 
-    interface AuthoritiesConverter extends Converter<Map<String, Object>, Collection<GrantedAuthority>> {
-    }
+    interface AuthoritiesConverter extends Converter<Map<String, Object>, Collection<GrantedAuthority>> {}
 
     @Bean
     AuthoritiesConverter realmRolesAuthoritiesConverter() {
@@ -55,11 +53,15 @@ public class SecurityConfiguration {
     @Bean
     SecurityFilterChain resourceServerSecurityFilterChain(HttpSecurity http,
                                                           Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter) throws Exception {
-        http.oauth2ResourceServer(resourceServer -> resourceServer.jwt(
-                jwtDecoder -> jwtDecoder.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+        http.oauth2ResourceServer(resourceServer -> {
+            resourceServer.jwt(jwtDecoder -> {
+                jwtDecoder.jwtAuthenticationConverter(jwtAuthenticationConverter);
+            });
+        });
 
-        http.sessionManagement(sessions -> sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .csrf(AbstractHttpConfigurer::disable);
+        http.sessionManagement(sessions -> {
+            sessions.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        }).csrf(AbstractHttpConfigurer::disable);
 
         http.authorizeHttpRequests(requests -> {
             requests.requestMatchers("/me").authenticated();
