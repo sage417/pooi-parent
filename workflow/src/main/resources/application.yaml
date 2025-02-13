@@ -1,3 +1,8 @@
+# project basic config
+spring.application:
+  name: pooi-workflow-core
+
+# datasource
 spring.datasource.dynamic:
   primary: core
   strict: true
@@ -9,11 +14,22 @@ spring.datasource.dynamic:
       init:
         schema: classpath*:sql/init.sql
         data: classpath*:sql/data.sql
-
+# redis
 spring.redis:
   host: redis.pooi.app
   port: 6379
 
+# discover
+spring.cloud.consul:
+  host: https://consul.pooi.app
+  port: 443
+  discovery:
+    enabled: true
+    instanceId: ${spring.application.name}:${random.value} # ${spring.application.name}:${profiles separated by comma}:${server.port}”
+    # healthCheckPath: /my-health-check
+    healthCheckInterval: 10s
+
+# executor
 spring.dynamic.tp:
   enabled: true                               # 是否启用 dynamictp，默认true
   enabledBanner: false
@@ -36,5 +52,10 @@ management:
     redis:
       enabled: off
 
+# flowable
 flowable:
   custom-mybatis-mappers:
+
+# logging
+logging.level:
+  org.springframework.security: DEBUG

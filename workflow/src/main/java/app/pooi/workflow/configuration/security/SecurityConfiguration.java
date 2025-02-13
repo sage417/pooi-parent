@@ -65,6 +65,8 @@ public class SecurityConfiguration {
 
         http.authorizeHttpRequests(requests -> {
             requests.requestMatchers("/me").authenticated();
+            // consul health-check
+            requests.requestMatchers("/actuator/health").permitAll();
             requests.anyRequest().denyAll();
         });
 
