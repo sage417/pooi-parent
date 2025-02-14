@@ -21,11 +21,13 @@ spring.redis:
 
 # discover
 spring.cloud.consul:
-  host: https://consul.pooi.app
+  host: consul.pooi.app
   port: 443
+  scheme: https
   discovery:
     enabled: true
     instanceId: ${spring.application.name}:${random.value} # ${spring.application.name}:${profiles separated by comma}:${server.port}”
+    prefer-ip-address: true
     # healthCheckPath: /my-health-check
     healthCheckInterval: 10s
 
