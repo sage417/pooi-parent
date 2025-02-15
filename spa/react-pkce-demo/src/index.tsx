@@ -21,7 +21,7 @@ const authConfig: TAuthConfig = {
 }
 
 function LoginInfo() {
-  const { tokenData, token, logIn, logOut, idToken, error }: IAuthContext = useContext(AuthContext)
+  const { tokenData, token, logIn, logOut, idToken, idTokenData, error }: IAuthContext = useContext(AuthContext)
 
   if (error) {
     return (
@@ -36,35 +36,69 @@ function LoginInfo() {
     <>
       {token ? (
         <>
-          <div>
-            <h4>Access Token (JWT)</h4>
-            <pre
-              style={{
-                width: '400px',
-                margin: '10px',
-                padding: '5px',
-                border: 'black 2px solid',
-                wordBreak: 'break-all',
-                whiteSpace: 'break-spaces',
-              }}
-            >
-              {token}
-            </pre>
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+            <div>
+              <h4>Access Token (JWT)</h4>
+              <pre
+                style={{
+                  width: '400px',
+                  margin: '10px',
+                  padding: '5px',
+                  border: 'black 2px solid',
+                  wordBreak: 'break-all',
+                  whiteSpace: 'break-spaces',
+                }}
+              >
+                {token}
+              </pre>
+            </div>
+            <div>
+              <h4>Login Information from Access Token (Base64 decoded JWT)</h4>
+              <pre
+                style={{
+                  width: '400px',
+                  margin: '10px',
+                  padding: '5px',
+                  border: 'black 2px solid',
+                  wordBreak: 'break-all',
+                  whiteSpace: 'break-spaces',
+                }}
+              >
+                {JSON.stringify(tokenData, null, 2)}
+              </pre>
+            </div>
           </div>
-          <div>
-            <h4>Login Information from Access Token (Base64 decoded JWT)</h4>
-            <pre
-              style={{
-                width: '400px',
-                margin: '10px',
-                padding: '5px',
-                border: 'black 2px solid',
-                wordBreak: 'break-all',
-                whiteSpace: 'break-spaces',
-              }}
-            >
-              {JSON.stringify(tokenData, null, 2)}
-            </pre>
+          <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+            <div>
+              <h4>ID Token (JWT)</h4>
+              <pre
+                style={{
+                  width: '400px',
+                  margin: '10px',
+                  padding: '5px',
+                  border: 'black 2px solid',
+                  wordBreak: 'break-all',
+                  whiteSpace: 'break-spaces',
+                }}
+              >
+                {idToken}
+              </pre>
+            </div>
+            <div>
+              <h4>Login Information from ID Token (Base64 decoded JWT)</h4>
+              <pre
+                style={{
+                  width: '400px',
+                  margin: '10px',
+                  padding: '5px',
+                  border: 'black 2px solid',
+                  wordBreak: 'break-all',
+                  whiteSpace: 'break-spaces',
+                }}
+              >
+                {JSON.stringify(idTokenData, null, 2)}
+              </pre>
+            </div>
           </div>
           <button onClick={() => logOut()}>Log out</button>
         </>
