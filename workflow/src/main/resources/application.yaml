@@ -57,6 +57,11 @@ management:
 # flowable
 flowable:
   custom-mybatis-mappers:
+  eventregistry:
+    enabled: false
+  idm:
+    enabled: false
+
 
 # logging
 logging.level:
