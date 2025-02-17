@@ -22,6 +22,7 @@
         <!-- 2021.0.x aka Jubilee	2.6.x, 2.7.x (Starting with 2021.0.3)-->
         <spring-cloud.version>2021.0.8</spring-cloud.version>
         <skywalking-java-agent.version>9.3.0</skywalking-java-agent.version>
+        <dynamicTp.version>1.1.7</dynamicTp.version>
     </properties>
     <dependencies>
 
@@ -61,13 +62,6 @@
         <!--                </exclusion>-->
         <!--            </exclusions>-->
         <!--        </dependency>-->
-
-        <!-- skywalking -->
-        <dependency>
-            <groupId>org.apache.skywalking</groupId>
-            <artifactId>apm-toolkit-logback-1.x</artifactId>
-            <version>${skywalking-java-agent.version}</version>
-        </dependency>
 
         <!-- redis start -->
         <dependency>
@@ -168,11 +162,24 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- skywalking -->
+        <dependency>
+            <groupId>org.apache.skywalking</groupId>
+            <artifactId>apm-toolkit-logback-1.x</artifactId>
+            <version>${skywalking-java-agent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.dromara.dynamictp</groupId>
+            <artifactId>dynamic-tp-extension-skywalking</artifactId>
+            <version>${dynamicTp.version}</version>
+        </dependency>
+
         <!-- thread pool -->
         <dependency>
             <groupId>org.dromara.dynamictp</groupId>
             <artifactId>dynamic-tp-spring-boot-starter-common</artifactId>
-            <version>1.1.7</version>
+            <version>${dynamicTp.version}</version>
         </dependency>
 
         <dependency>
