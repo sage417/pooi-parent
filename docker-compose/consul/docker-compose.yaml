@@ -1,0 +1,21 @@
+networks:
+  devops-test:
+    external: true
+
+services:
+  consul:
+    container_name: consul
+    image: bitnami/consul:1.20.2
+    networks:
+      - devops-test
+    environment:
+      CONSUL_DATACENTER: N100_DC
+    ports:
+      - '8300:8300'     # TCP RPC
+      - '8301:8301'     # TCP LAN gossip
+      - '8301:8301/udp' # UDP LAN gossip
+      - '8302:8302'     # TCP WAN gossip
+      - '8302:8302/udp' # UDP WAN gossip
+      - '8500:8500'     # HTTP
+      - '8600:8600'     # TCP DNS
+      - '8600:8600/udp' # UDP DNS

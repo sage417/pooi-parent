@@ -2,6 +2,9 @@
 spring.application:
   name: pooi-workflow-core
 
+server:
+  port: 8080
+
 # datasource
 spring.datasource.dynamic:
   primary: core
@@ -30,6 +33,10 @@ spring.cloud.consul:
     prefer-ip-address: true
     # healthCheckPath: /my-health-check
     healthCheckInterval: 10s
+    tags:
+      - "prometheus"
+    metadata:
+      prometheus-path: /actuator/prometheus # prometheus discovery exporter endpoint
 
 # executor
 spring.dynamic.tp:
@@ -50,6 +57,9 @@ spring.dynamic.tp:
       taskWrapperNames: ["ttl", "mdc", "swTrace"]
       notifyEnabled: false
 management:
+  endpoints:
+    web.exposure:
+      include: prometheus,health
   health:
     redis:
       enabled: off
