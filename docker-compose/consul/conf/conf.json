@@ -1,0 +1,28 @@
+{
+
+  "datacenter": "N100_DC",
+  "domain": "consul",
+  "data_dir": "/bitnami/consul",
+  "pid_file": "/opt/bitnami/consul/tmp/consul.pid",
+  "ui": true,
+  "bootstrap_expect": 1,
+  "performance": {
+    "raft_multiplier": 1
+  },
+  "addresses": {
+    "http": "0.0.0.0"
+  },
+  "retry_join": ["127.0.0.1"],
+  "retry_join_wan": ["127.0.0.1"],
+  "ports": {
+    "http": 8500,
+    "dns": 8600,
+    "serf_lan": 8301,
+    "server": 8300
+  },
+  "serf_lan": "0.0.0.0" ,
+  "telemetry": {
+    "prometheus_retention_time": "3m",
+    "disable_hostname": true
+  }
+}

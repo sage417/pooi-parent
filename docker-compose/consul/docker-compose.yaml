@@ -10,12 +10,14 @@ services:
       - devops-test
     environment:
       CONSUL_DATACENTER: N100_DC
+    volumes:
+      - ./conf/consul.json:/opt/bitnami/consul/conf/consul.json
     ports:
-      - '8300:8300'     # TCP RPC
-      - '8301:8301'     # TCP LAN gossip
-      - '8301:8301/udp' # UDP LAN gossip
-      - '8302:8302'     # TCP WAN gossip
-      - '8302:8302/udp' # UDP WAN gossip
-      - '8500:8500'     # HTTP
-      - '8600:8600'     # TCP DNS
-      - '8600:8600/udp' # UDP DNS
+      - '8300:8300' # rpc
+      - '8301:8301' # lan gossip
+      - '8301:8301/udp' #lan gossip
+      - '8302:8302' # wan gossip
+      - '8302:8302/udp' #wan gossip
+      - '8500:8500' # http
+      - '8600:8600' # dns
+      - '8600:8600/udp' # dns
