@@ -1,0 +1,16 @@
+version: "3"
+
+networks:
+  devops-test:
+    external: true
+
+services:
+  infrastructure_prometheus:
+    image: prom/prometheus:v2.25.0
+    restart: always
+    volumes:
+      - ./prometheus_conf/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - devops-test
