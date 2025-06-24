@@ -1,0 +1,7 @@
+# igore .env .env.test .env.prod
+.env
+.env.*
+
+# exclude .env.example
+!.env.example
+!**/.env.example

@@ -1,0 +1,50 @@
+# Copyright Broadcom, Inc. All Rights Reserved.
+# SPDX-License-Identifier: APACHE-2.0
+
+networks:
+  devops-test:
+    external: true
+
+services:
+  postgresql:
+    image: bitnami/postgresql:17.2.0
+    environment:
+      # ALLOW_EMPTY_PASSWORD is recommended only for development.
+      - ALLOW_EMPTY_PASSWORD=yes
+      - POSTGRESQL_USERNAME=bn_keycloak
+      - POSTGRESQL_DATABASE=${POSTGRES_DB}/
+    volumes:
+      - 'postgresql_data:/bitnami/postgresql'
+    healthcheck:
+      test: pg_isready --dbname=${POSTGRES_DB} --username='bn_keycloak' || exit 1
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    networks:
+      - devops-test
+
+  keycloak:
+    container_name: keycloak
+    image: bitnami/keycloak:26.1.2
+    environment:
+      - KC_PROXY_HEADERS=xforwarded
+      - KEYCLOAK_ENABLE_STATISTICS=true
+      - KEYCLOAK_ENABLE_HEALTH_ENDPOINTS=true
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    ports:
+      - "8090:8080"
+      #- "0:9000" #metrics
+    healthcheck:
+      test: ['CMD-SHELL', "/bin/bash", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /health/ready HTTP/1.1\r\nhost: http://localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;"] 
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - devops-test
+
+
+volumes:
+  postgresql_data:
+    driver: local
