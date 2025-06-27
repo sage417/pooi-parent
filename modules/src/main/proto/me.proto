@@ -17,5 +17,5 @@ message HelloWorldResponse {
 }
 
 service HelloWorldService {
-  rpc SayHello(stream HelloWorldRequest) returns (stream HelloWorldResponse);
+  rpc SayHello(HelloWorldRequest) returns (HelloWorldResponse);
 }
