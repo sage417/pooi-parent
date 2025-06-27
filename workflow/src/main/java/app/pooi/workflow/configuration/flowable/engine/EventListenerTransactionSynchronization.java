@@ -2,7 +2,7 @@ package app.pooi.workflow.configuration.flowable.engine;
 
 import app.pooi.common.multitenancy.ApplicationInfoHolder;
 import app.pooi.common.util.SpringContextUtil;
-import app.pooi.model.workflow.event.EventPayload;
+import app.pooi.modules.workflow.event.EventPayload;
 import app.pooi.workflow.repository.workflow.EventRecordDO;
 import app.pooi.workflow.repository.workflow.EventRecordRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;

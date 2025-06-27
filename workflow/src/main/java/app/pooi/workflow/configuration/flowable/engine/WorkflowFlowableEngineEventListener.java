@@ -1,6 +1,6 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
-import app.pooi.model.workflow.event.*;
+import app.pooi.modules.workflow.event.*;
 import app.pooi.workflow.repository.workflow.EventRecordDO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Setter;

@@ -28,7 +28,7 @@
 
         <dependency>
             <groupId>app.pooi</groupId>
-            <artifactId>model</artifactId>
+            <artifactId>modules</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
