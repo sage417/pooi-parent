@@ -4,7 +4,9 @@ import app.pooi.modules.workflow.stubs.HelloWorldServiceGrpc;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
+@EnableDiscoveryClient
 @SpringBootApplication
 public class GrpcClientApplication {
 

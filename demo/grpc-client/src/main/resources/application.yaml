@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: 0
 
 # discover
 spring.cloud.consul:
@@ -8,18 +8,16 @@ spring.cloud.consul:
   scheme: https
   discovery:
     enabled: true
+    register: false
     instanceId: ${spring.application.name}:${random.value} # ${spring.application.name}:${profiles separated by comma}:${server.port}”
     prefer-ip-address: true
-    ip-address: 192.168.31.122
     # healthCheckPath: /my-health-check
     healthCheckInterval: 10s
-    tags:
-      - "grpc"
-    metadata:
-      grpc-port: ${grpc.server.port}
 
 grpc:
   client:
     pooi-workflow-core:
       address: 'discovery:///pooi-workflow-core'
-      negotiation-type: plaintext
+      enableKeepAlive: true
+      keepAliveWithoutCalls: true
+      negotiationType: plaintext
