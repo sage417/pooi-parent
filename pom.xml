@@ -12,9 +12,7 @@
   <modules>
     <module>common</module>
     <module>modules</module>
-    <module>oauth2login</module>
     <module>workflow</module>
-    <module>keycloak</module>
   </modules>
   
   <properties>
