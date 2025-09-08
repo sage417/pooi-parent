@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package app.pooi.rpc.workflow;
+
+option java_multiple_files = true;
+option java_package = "app.pooi.rpc.workflow.stubs";
+option java_outer_classname = "MeProto";
+
+
+message HelloWorldRequest {
+  // a name to greet, default is "World"
+  optional string name = 1;
+}
+
+message HelloWorldResponse {
+  string greeting = 1;
+}
+
+service HelloWorldService {
+  rpc SayHello(HelloWorldRequest) returns (HelloWorldResponse);
+}

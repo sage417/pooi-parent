@@ -1,3 +1,8 @@
+# project basic config
+spring.application:
+  name: pooi-workflow-core
+
+# datasource
 spring.datasource.dynamic:
   primary: core
   strict: true
@@ -18,22 +23,39 @@ spring.redis:
   host: redis.pooi.app
   port: 6379
 
+# discover
+spring.cloud.consul:
+  enabled: false
+
+# executor
 spring.dynamic.tp:
-  enabled: true                               # 是否启用 dynamictp，默认true
-  enabledCollect: false                        # 是否开启监控指标采集，默认true
-  collectorTypes: internal_logging          # 监控数据采集器类型（logging | micrometer | internal_logging | JMX），默认micrometer
-  monitorInterval: 10                          # 监控时间间隔（报警检测、指标采集），默认5s
-  executors: # 动态线程池配置，都有默认值，采用默认值的可以不配置该项，减少配置量
-    - threadPoolName: event-push         # 线程池名称，必填
-      executorType: common                 # 线程池类型 common、eager、ordered、scheduled、priority，默认 common
-      corePoolSize: 20                      # 核心线程数，默认1
-      maximumPoolSize: 20                   # 最大线程数，默认cpu核数
-      rejectedHandlerType: CallerRunsPolicy          # 拒绝策略，查看RejectedTypeEnum枚举类，默认AbortPolicy
-      keepAliveTime: 120                              # 空闲线程等待超时时间，默认60
-      threadNamePrefix: dtp-event-push               # 线程名前缀，默认dtp
-      awaitTerminationSeconds: 10                     # 优雅关闭线程池时，阻塞等待线程池中任务执行时间，默认3，单位（s）
-      taskWrapperNames: [ "ttl" ]               # 任务包装器名称，继承TaskWrapper接口
+  enabled: true
+  enabledBanner: false
+  enabledCollect: false
+  collectorTypes: micrometer
+  monitorInterval: 10
+  executors:
+    - threadPoolName: event-push
+      executorType: common
+      corePoolSize: 20
+      maximumPoolSize: 20
+      rejectedHandlerType: CallerRunsPolicy
+      keepAliveTime: 120
+      threadNamePrefix: dtp-event-push
+      awaitTerminationSeconds: 10
+      taskWrapperNames: [ "ttl", "mdc", "swTrace" ]
+      notifyEnabled: false
+management:
+  endpoints:
+    web.exposure:
+      include: prometheus,health
+  health:
+    redis:
+      enabled: off
 
 flowable:
-  custom-mybatis-xml-mappers:
-    - custom-mappers/AttachmentMapper.xml
+  custom-mybatis-mappers:
+  eventregistry:
+    enabled: false
+  idm:
+    enabled: false

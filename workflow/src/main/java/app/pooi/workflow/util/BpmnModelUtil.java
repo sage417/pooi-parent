@@ -1,6 +1,6 @@
 package app.pooi.workflow.util;
 
-import app.pooi.common.util.CollectorsUtil;
+import app.pooi.basic.util.CollectorsUtil;
 import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

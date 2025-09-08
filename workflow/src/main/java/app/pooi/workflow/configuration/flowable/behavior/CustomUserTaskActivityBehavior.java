@@ -11,7 +11,6 @@ package app.pooi.workflow.configuration.flowable.behavior;
 import app.pooi.workflow.configuration.flowable.props.FlowableCustomProperties;
 import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigDO;
 import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigRepository;
-import app.pooi.workflow.repository.workflow.CommentDO;
 import app.pooi.workflow.repository.workflow.CommentRepository;
 import app.pooi.workflow.util.BpmnModelUtil;
 import app.pooi.workflow.util.TaskEntityUtil;
@@ -332,7 +331,7 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 //        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
         UserTask preFlowElement = BpmnModelUtil.findPreFlowElement(commandContext, ((FlowNode) execution.getCurrentFlowElement()), UserTask.class);
 
-        List<CommentDO> commentDOS = commentRepository.listByInstanceId(execution.getProcessInstanceId());
+//        List<CommentDO> commentDOS = commentRepository.listByInstanceId(execution.getProcessInstanceId());
 
 
         return false;

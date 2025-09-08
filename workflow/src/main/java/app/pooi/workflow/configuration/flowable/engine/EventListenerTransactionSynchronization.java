@@ -1,7 +1,7 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
-import app.pooi.common.multitenancy.ApplicationInfoHolder;
-import app.pooi.common.util.SpringContextUtil;
+import app.pooi.basic.util.SpringContextUtil;
+import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.application.eventpush.EventPushApplication;
 import app.pooi.workflow.repository.workflow.EventRecordDO;
 import app.pooi.workflow.repository.workflow.EventRecordRepository;

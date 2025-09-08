@@ -1,6 +1,6 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
-import app.pooi.common.multitenancy.ApplicationInfoHolder;
+import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import lombok.Data;
@@ -127,7 +127,7 @@ public class ProcessDefinitionDeploymentCache<T> implements InitializingBean, Di
 
     @Accessors(chain = true)
     @Data
-    static class DeploymentCacheMessage implements Serializable {
+    public static class DeploymentCacheMessage implements Serializable {
 
         private String applicationCode;
 

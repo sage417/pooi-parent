@@ -34,7 +34,7 @@
 
         <dependency>
             <groupId>app.pooi</groupId>
-            <artifactId>modules</artifactId>
+            <artifactId>rpc</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 

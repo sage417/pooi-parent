@@ -1,6 +1,6 @@
 package app.pooi.workflow.application.eventpush;
 
-import app.pooi.modules.workflow.event.EventPayload;
+import app.pooi.basic.workflow.event.EventPayload;
 import app.pooi.workflow.repository.workflow.EventRecordDO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;

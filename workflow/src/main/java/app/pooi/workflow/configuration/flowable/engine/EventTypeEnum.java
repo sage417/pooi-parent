@@ -1,6 +1,6 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
-import app.pooi.common.util.IEnum;
+import app.pooi.basic.util.IEnum;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

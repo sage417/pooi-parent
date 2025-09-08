@@ -31,12 +31,15 @@ spring.cloud.consul:
     enabled: true
     instanceId: ${spring.application.name}:${random.value} # ${spring.application.name}:${profiles separated by comma}:${server.port}”
     prefer-ip-address: true
+    ip-address: 192.168.31.122
     # healthCheckPath: /my-health-check
     healthCheckInterval: 10s
     tags:
       - "prometheus"
+      - "grpc"
     metadata:
       prometheus-path: /actuator/prometheus # prometheus discovery exporter endpoint
+      #gRPC_port: ${grpc.server.port} # grpc-spring-boot-starter set this automatically
 
 # executor
 spring.dynamic.tp:

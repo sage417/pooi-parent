@@ -1,6 +1,6 @@
 package app.pooi.workflow.application;
 
-import app.pooi.common.multitenancy.ApplicationInfoHolder;
+import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.application.entity.FlowElementEntity;
 import app.pooi.workflow.util.BpmnModelUtil;
 import lombok.NonNull;

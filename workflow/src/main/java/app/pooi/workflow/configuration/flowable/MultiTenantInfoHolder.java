@@ -1,7 +1,7 @@
 package app.pooi.workflow.configuration.flowable;
 
-import app.pooi.common.multitenancy.ApplicationInfo;
-import app.pooi.common.multitenancy.ApplicationInfoHolder;
+import app.pooi.tenant.multitenancy.ApplicationInfo;
+import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.repository.tenant.TenantInfoDO;
 import app.pooi.workflow.repository.tenant.TenantInfoRepository;
 import org.flowable.common.engine.impl.cfg.multitenant.TenantInfoHolder;

@@ -1,7 +1,7 @@
 package app.pooi.workflow.controller;
 
-import app.pooi.modules.rest.CommonResult;
-import app.pooi.modules.workflow.event.EventPayload;
+import app.pooi.basic.rest.CommonResult;
+import app.pooi.basic.workflow.event.EventPayload;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
