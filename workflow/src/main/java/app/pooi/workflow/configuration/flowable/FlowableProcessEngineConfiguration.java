@@ -41,7 +41,7 @@ class FlowableProcessEngineConfiguration {
         return new WorkflowFlowableEngineEventListener();
     }
 
-//    @Bean
+    @Bean
     public DeploymentCache<ProcessDefinitionCacheEntry> deploymentCache() {
         return new ProcessDefinitionDeploymentCache<>();
     }

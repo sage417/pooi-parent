@@ -2,7 +2,6 @@ package app.pooi.workflow.application;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
 import app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport;
-import app.pooi.workflow.conf.TestRedisConfiguration;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Slf4j
 @ExtendWith(TenantInfoHolderExtension.class)
 @ExtendWith(FlowableSpringExtension.class)
-@SpringBootTest(classes = {TestRedisConfiguration.class})
+@SpringBootTest(classes = {})
 class UserTaskOperationApplicationTest {
 
     @Resource

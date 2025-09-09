@@ -1,7 +1,6 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
-import app.pooi.workflow.conf.TestRedisConfiguration;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.spring.impl.test.FlowableSpringExtension;
@@ -18,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Slf4j
 @ExtendWith(TenantInfoHolderExtension.class)
 @ExtendWith(FlowableSpringExtension.class)
-@SpringBootTest(classes = {TestRedisConfiguration.class})
+@SpringBootTest(classes = {})
 class ProcessDefinitionDeploymentCacheTest {
 
     @Resource

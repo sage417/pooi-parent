@@ -2,7 +2,6 @@ package app.pooi.workflow.application;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
 import app.pooi.workflow.application.entity.FlowElementEntity;
-import app.pooi.workflow.conf.TestRedisConfiguration;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -20,7 +19,7 @@ import static app.pooi.workflow.TenantInfoHolderExtension.TENANT_APP_1;
 @Slf4j
 @ExtendWith(TenantInfoHolderExtension.class)
 @ExtendWith(FlowableSpringExtension.class)
-@SpringBootTest(classes = {TestRedisConfiguration.class})
+@SpringBootTest(classes = {})
 class ProcessDiagramApplicationTest {
 
     @Resource

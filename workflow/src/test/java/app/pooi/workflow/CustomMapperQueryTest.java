@@ -1,6 +1,5 @@
 package app.pooi.workflow;
 
-import app.pooi.workflow.conf.TestRedisConfiguration;
 import app.pooi.workflow.query.AttachmentQuery;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @Slf4j
 @ExtendWith(TenantInfoHolderExtension.class)
 @ExtendWith(FlowableSpringExtension.class)
-@SpringBootTest(classes = {TestRedisConfiguration.class})
+@SpringBootTest(classes = {})
 class CustomMapperQueryTest {
 
 

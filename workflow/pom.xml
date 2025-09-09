@@ -84,12 +84,6 @@
         <!-- redis end -->
 
         <!-- database -->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>dynamic-datasource-spring-boot-starter</artifactId>
-            <version>3.5.2</version>
-            <optional>true</optional>
-        </dependency>
 
         <dependency>
             <groupId>com.baomidou</groupId>
@@ -193,12 +187,6 @@
             <version>${dynamicTp.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>transmittable-thread-local</artifactId>
-            <version>2.14.5</version>
-        </dependency>
-
         <!-- code tools -->
         <dependency>
             <groupId>org.mapstruct</groupId>
@@ -235,6 +223,26 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>3.5.13</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis-spring</artifactId>
+                <version>2.1.1</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>transmittable-thread-local</artifactId>
+                <version>2.14.5</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>33.3.0-jre</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
