@@ -1,7 +1,7 @@
 package app.pooi.workflow;
 
 import app.pooi.tenant.dynamicdatasource.EnableDynamicDataSource;
-import org.dromara.dynamictp.core.spring.EnableDynamicTp;
+import org.dromara.dynamictp.spring.annotation.EnableDynamicTp;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
