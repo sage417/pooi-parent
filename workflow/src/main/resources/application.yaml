@@ -42,7 +42,7 @@ spring.cloud.consul:
       #gRPC_port: ${grpc.server.port} # grpc-spring-boot-starter set this automatically
 
 # executor
-spring.dynamic.tp:
+dynamictp:
   enabled: true
   enabledBanner: false
   enabledCollect: false
