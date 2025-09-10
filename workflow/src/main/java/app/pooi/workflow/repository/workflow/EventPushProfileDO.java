@@ -18,6 +18,10 @@ public class EventPushProfileDO {
 
     private String tenantId;
 
+    private String type;
+
+    private String profile;
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
