@@ -75,11 +75,24 @@
         <!--            </exclusions>-->
         <!--        </dependency>-->
 
-        <!-- redis start -->
+        <!-- redisson start -->
+        <!-- ref https://redisson.pro/docs/integration-with-spring/ -->
         <dependency>
             <groupId>org.redisson</groupId>
             <artifactId>redisson-spring-boot-starter</artifactId>
-            <version>3.29.0</version>
+            <version>3.51.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.redisson</groupId>
+                    <artifactId>redisson-spring-data-35</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-data-27</artifactId>
+            <version>3.51.0</version>
         </dependency>
         <!-- redis end -->
 
