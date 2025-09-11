@@ -53,7 +53,9 @@ CREATE TABLE `t_workflow_event_push_record`
 CREATE TABLE `t_workflow_event_push_profile`
 (
     `id`          bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-    tenant_id     varchar(255) NOT NULL DEFAULT '' COMMENT '租户标识',
+    `tenant_id` varchar(255) NOT NULL DEFAULT '' COMMENT '租户标识',
+    `type`      varchar(10)  NOT NULL DEFAULT '' COMMENT '配置类型',
+    `profile`   json NULL COMMENT '配置',
     `create_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP (3),
     `update_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP (3) ON UPDATE CURRENT_TIMESTAMP (3),
     PRIMARY KEY (`id`)
@@ -95,3 +97,6 @@ CREATE TABLE `t_workflow_approval_delegate_record`
 ) ENGINE = InnoDB
   AUTO_INCREMENT = 0
   DEFAULT CHARSET = utf8mb4 COMMENT '审批委托记录表';
+
+insert into t_workflow_event_push_profile (tenant_id, type, profile)
+values ('app1', 'http', '{}');
