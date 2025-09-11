@@ -3,6 +3,7 @@ package app.pooi.workflow.configuration.flowable;
 import org.flowable.common.engine.impl.cfg.multitenant.TenantInfoHolder;
 import org.flowable.common.spring.CommonAutoDeploymentProperties;
 import org.flowable.engine.ProcessEngine;
+import org.flowable.engine.ProcessEngineConfiguration;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.DeploymentBuilder;
 import org.flowable.spring.configurator.DefaultAutoDeploymentStrategy;
@@ -30,10 +31,11 @@ class MultiTenantDefaultAutoDeploymentStrategy extends DefaultAutoDeploymentStra
 
     @Override
     protected void deployResourcesInternal(String deploymentNameHint, Resource[] resources, ProcessEngine engine) {
-        super.deployResourcesInternal(deploymentNameHint, resources, engine);
+//        super.deployResourcesInternal(deploymentNameHint, resources, engine);
 
-        if (engine instanceof MultiSchemaMultiTenantProcessEngineConfiguration) {
-            this.tenantInfoHolder = ((MultiSchemaMultiTenantProcessEngineConfiguration) engine).getTenantInfoHolder();
+        ProcessEngineConfiguration processEngineConfiguration = engine.getProcessEngineConfiguration();
+        if (processEngineConfiguration instanceof MultiSchemaMultiTenantProcessEngineConfiguration) {
+            this.tenantInfoHolder = ((MultiSchemaMultiTenantProcessEngineConfiguration) processEngineConfiguration).getTenantInfoHolder();
         }
 
         if (this.tenantInfoHolder == null) {
