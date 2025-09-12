@@ -1,7 +1,7 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
 import app.pooi.basic.workflow.event.*;
-import app.pooi.workflow.repository.workflow.EventRecordDO;
+import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -35,7 +35,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         ActivityStartedEvent activityStartedEvent = eventMapper.activityStartEvent(historicProcessInstance);
         activityStartedEvent.setActivityId(event.getActivityId());
 
-        EventRecordDO eventRecordDO = eventMapper.activityStartedEventRecordDO(event);
+        EventRecordEntity eventRecordDO = eventMapper.activityStartedEventRecordDO(event);
         EventPayload eventPayload = new EventPayload()
                 .setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
                 .setEvent(activityStartedEvent);
@@ -53,7 +53,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         ActivityCompletedEvent activityCompletedEvent = eventMapper.activityEndEvent(historicProcessInstance);
         activityCompletedEvent.setActivityId(event.getActivityId());
 
-        EventRecordDO eventRecordDO = eventMapper.activityCompletedEventRecordDO(event);
+        EventRecordEntity eventRecordDO = eventMapper.activityCompletedEventRecordDO(event);
         EventPayload eventPayload = new EventPayload()
                 .setHeader(new Header(eventRecordDO.getEventId(), eventRecordDO.getEventType()))
                 .setEvent(activityCompletedEvent);
@@ -69,7 +69,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         HistoricProcessInstanceEntity historicProcessInstance = CommandContextUtil.getHistoricProcessInstanceEntityManager()
                 .findById(event.getProcessInstanceId());
 
-        EventRecordDO eventRecordDO = eventMapper.taskCreatedEventRecordDO((TaskEntity) event.getEntity());
+        EventRecordEntity eventRecordDO = eventMapper.taskCreatedEventRecordDO((TaskEntity) event.getEntity());
         UserTaskCreatedEvent userTaskCreatedEvent = eventMapper.taskCreatedEvent(historicProcessInstance, ((TaskEntity) event.getEntity()));
 
         EventPayload eventPayload = new EventPayload()
@@ -88,7 +88,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         HistoricProcessInstanceEntity historicProcessInstance = CommandContextUtil.getHistoricProcessInstanceEntityManager()
                 .findById(event.getProcessInstanceId());
 
-        EventRecordDO eventRecordDO = eventMapper.taskAssigneeEventRecordDO((TaskEntity) event.getEntity());
+        EventRecordEntity eventRecordDO = eventMapper.taskAssigneeEventRecordDO((TaskEntity) event.getEntity());
         UserTaskAssigneeEvent userTaskAssigneeEvent = eventMapper.taskAssigneeEvent(historicProcessInstance, ((TaskEntity) event.getEntity()));
 
         EventPayload eventPayload = new EventPayload()
@@ -106,7 +106,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
         HistoricProcessInstanceEntity historicProcessInstance = CommandContextUtil.getHistoricProcessInstanceEntityManager()
                 .findById(event.getProcessInstanceId());
 
-        EventRecordDO eventRecordDO = eventMapper.taskCompletedEventRecordDO((TaskEntity) event.getEntity());
+        EventRecordEntity eventRecordDO = eventMapper.taskCompletedEventRecordDO((TaskEntity) event.getEntity());
         UserTaskCompletedEvent userTaskCompletedEvent = eventMapper.taskCompletedEvent(historicProcessInstance, ((TaskEntity) event.getEntity()));
 
         EventPayload eventPayload = new EventPayload()
@@ -125,7 +125,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
             return;
         }
 
-        EventRecordDO eventRecordDO = this.eventMapper.processInstanceStartRecordDO(executionEntity);
+        EventRecordEntity eventRecordDO = this.eventMapper.processInstanceStartRecordDO(executionEntity);
         InstanceStartedEvent instanceStartedEvent = this.eventMapper.instanceStartedEvent(executionEntity);
 
         EventPayload eventPayload = new EventPayload()
@@ -143,7 +143,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
             return;
         }
 
-        EventRecordDO eventRecordDO = this.eventMapper.processInstanceCompleteRecordDO(executionEntity);
+        EventRecordEntity eventRecordDO = this.eventMapper.processInstanceCompleteRecordDO(executionEntity);
         InstanceCompletedEvent instanceCompletedEvent = this.eventMapper.instanceCompletedEvent(executionEntity);
 
         EventPayload eventPayload = new EventPayload()

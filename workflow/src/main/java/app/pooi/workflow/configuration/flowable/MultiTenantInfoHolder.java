@@ -2,8 +2,8 @@ package app.pooi.workflow.configuration.flowable;
 
 import app.pooi.tenant.multitenancy.ApplicationInfo;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
-import app.pooi.workflow.repository.tenant.TenantInfoDO;
-import app.pooi.workflow.repository.tenant.TenantInfoRepository;
+import app.pooi.workflow.domain.model.tenant.TenantInfo;
+import app.pooi.workflow.domain.repository.TenantInfoRepository;
 import org.flowable.common.engine.impl.cfg.multitenant.TenantInfoHolder;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -29,7 +29,7 @@ class MultiTenantInfoHolder implements TenantInfoHolder, ApplicationContextAware
     @Override
     public Collection<String> getAllTenants() {
         var tenantInfoDOS = this.tenantInfoRepository.list();
-        return tenantInfoDOS.stream().map(TenantInfoDO::getTenantCode).toList();
+        return tenantInfoDOS.stream().map(TenantInfo::getTenantCode).toList();
     }
 
     @Override

@@ -2,10 +2,9 @@ package app.pooi.workflow.application.eventpush;
 
 import app.pooi.basic.workflow.event.EventPayload;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
-import app.pooi.workflow.repository.workflow.EventPushProfileDO;
-import app.pooi.workflow.repository.workflow.EventPushProfileRepository;
-import app.pooi.workflow.repository.workflow.EventRecordDO;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
+import app.pooi.workflow.domain.repository.EventPushProfileRepository;
+import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,7 @@ public class EventPushApplication {
     @Resource
     private Map<String, PushStrategy> pushStrategies;
 
-    public void asyncExecute(RLock fairLock, RFuture<Boolean> lockAsync, long tId, List<EventRecordDO> eventRecordDOS) {
+    public void asyncExecute(RLock fairLock, RFuture<Boolean> lockAsync, long tId, List<EventRecordEntity> eventRecordDOS) {
         executor.execute(() -> {
             // ensure locked
             boolean acquireLock = ensureAsyncLock(fairLock.getName(), lockAsync, tId);
@@ -50,11 +49,8 @@ public class EventPushApplication {
     }
 
     @SneakyThrows
-    private void pushOrderly(List<EventRecordDO> eventRecordDOS) {
-        EventPushProfileDO profileDO = eventPushProfileRepository.getOne(
-                Wrappers.lambdaQuery(EventPushProfileDO.class)
-                        .eq(EventPushProfileDO::getTenantId, applicationInfoHolder.getApplicationCode())
-        );
+    private void pushOrderly(List<EventRecordEntity> eventRecordDOS) {
+        EventPushProfile profileDO = eventPushProfileRepository.findByTenantId(applicationInfoHolder.getApplicationCode());
 
         if (profileDO == null) {
             return;
@@ -62,7 +58,7 @@ public class EventPushApplication {
 
         PushStrategy pushStrategy = getPushStrategy(profileDO.getType());
 
-        for (EventRecordDO eventRecordDO : eventRecordDOS) {
+        for (EventRecordEntity eventRecordDO : eventRecordDOS) {
             EventPayload eventPayload = objectMapper.readValue(eventRecordDO.getEvent(), EventPayload.class);
             String bodyString = objectMapper.writeValueAsString(eventPayload);
             log.info("event payload: {}", bodyString);

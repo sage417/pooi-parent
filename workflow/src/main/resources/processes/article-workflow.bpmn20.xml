@@ -6,7 +6,7 @@
         typeLanguage="http://www.w3.org/2001/XMLSchema"
         expressionLanguage="http://www.w3.org/1999/XPath"
         targetNamespace="http://www.flowable.org/processdef">
-    <process id="articleReview"
+    <process id="articleReview-prod"
              name="A simple process for article review." isExecutable="true">
         <startEvent id="start"/>
         <sequenceFlow sourceRef="start" targetRef="reviewArticle"/>
