@@ -1,4 +1,4 @@
-package app.pooi.workflow.controller;
+package app.pooi.workflow.interfaces.rest;
 
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;

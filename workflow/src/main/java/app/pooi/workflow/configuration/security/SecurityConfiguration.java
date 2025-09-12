@@ -64,7 +64,9 @@ public class SecurityConfiguration {
         }).csrf(AbstractHttpConfigurer::disable);
 
         http.authorizeHttpRequests(requests -> {
+            // white list
             requests.requestMatchers("/me").authenticated();
+            requests.requestMatchers("/mock/**").authenticated();
             // consul health-check
             requests.requestMatchers("/actuator/**").permitAll();
             requests.anyRequest().denyAll();

@@ -79,3 +79,11 @@ flowable:
 # logging
 logging.level:
   org.springframework.security: DEBUG
+
+grpc:
+  client:
+    helloWorldService:
+      address: discovery:/pooi-workflow-core
+      negotiation-type: plaintext
+  server:
+    health-service-enabled: off
