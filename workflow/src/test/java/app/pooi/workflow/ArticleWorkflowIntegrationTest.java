@@ -1,7 +1,7 @@
 package app.pooi.workflow;
 
 
-import app.pooi.workflow.repository.workflow.EventRecordRepository;
+import app.pooi.workflow.infrastructure.persistence.service.workflow.eventpush.EventRecordService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
@@ -38,7 +38,7 @@ class ArticleWorkflowIntegrationTest {
     @Resource
     private RedissonClient redissonClient;
     @Resource
-    private EventRecordRepository eventRecordRepository;
+    private EventRecordService eventRecordRepository;
 
     @SneakyThrows
     @Test

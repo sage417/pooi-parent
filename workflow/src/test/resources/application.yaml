@@ -28,7 +28,7 @@ spring.cloud.consul:
   enabled: false
 
 # executor
-spring.dynamic.tp:
+dynamictp:
   enabled: true
   enabledBanner: false
   enabledCollect: false
@@ -53,6 +53,7 @@ management:
     redis:
       enabled: off
 
+# flowable
 flowable:
   custom-mybatis-mappers:
   eventregistry:
