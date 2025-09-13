@@ -1,4 +1,4 @@
-package app.pooi.workflow.infrastructure.config;
+package app.pooi.workflow.infrastructure.config.mybatis;
 
 import com.baomidou.mybatisplus.autoconfigure.SqlSessionFactoryBeanCustomizer;
 import org.apache.ibatis.annotations.Mapper;
