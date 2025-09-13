@@ -4,14 +4,17 @@ import app.pooi.rpc.workflow.stubs.HelloWorldRequest;
 import app.pooi.rpc.workflow.stubs.HelloWorldResponse;
 import app.pooi.workflow.domain.repository.EventPushProfileRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.grpc.CallOptions;
-import io.grpc.Channel;
-import io.grpc.MethodDescriptor;
+import io.grpc.*;
 import io.grpc.protobuf.ProtoUtils;
 import io.grpc.stub.ClientCalls;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PreDestroy;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -66,4 +69,50 @@ public class GenericGrpcInvoker {
                 .build();
     }
 
+    @Component
+    static
+    class GrpcChannelManager {
+
+        private final Map<String, ManagedChannel> channelCache = new ConcurrentHashMap<>();
+
+        public ManagedChannel getChannel(String target) {
+
+            // 先从缓存获取
+            ManagedChannel channel = channelCache.get(target);
+            if (channel != null) {
+                return channel;
+            }
+
+            // 创建新通道
+            channel = createChannel(target);
+            channelCache.put(target, channel);
+            return channel;
+        }
+
+        private ManagedChannel createChannel(String target) {
+
+            ManagedChannelBuilder<?> builder = ManagedChannelBuilder.forTarget(target);
+
+            if (StringUtils.startsWithIgnoreCase(target, "static")) {
+                builder.usePlaintext(); // 静态配置通常用于开发环境
+            }
+            builder.usePlaintext();
+
+            return builder.build();
+        }
+
+        // TODO clear unused channel
+        public void refreshChannel(String configKey) {
+            ManagedChannel channel = channelCache.remove(configKey);
+            if (channel != null) {
+                channel.shutdown();
+            }
+        }
+
+        @PreDestroy
+        public void shutdown() {
+            channelCache.values().forEach(ManagedChannel::shutdown);
+            channelCache.clear();
+        }
+    }
 }
