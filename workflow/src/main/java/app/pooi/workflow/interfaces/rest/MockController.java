@@ -2,13 +2,12 @@ package app.pooi.workflow.interfaces.rest;
 
 import app.pooi.basic.rest.CommonResult;
 import app.pooi.basic.workflow.event.EventPayload;
-import app.pooi.rpc.workflow.stubs.HelloWorldRequest;
-import app.pooi.rpc.workflow.stubs.HelloWorldServiceGrpc;
+import app.pooi.rpc.workflow.stubs.HelloWorldResponse;
 import app.pooi.tenant.multitenancy.ApplicationInfo;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.application.ProcessDefinitionDeployApplication;
 import app.pooi.workflow.application.ProcessInstanceStartApplication;
-import net.devh.boot.grpc.client.inject.GrpcClient;
+import app.pooi.workflow.application.eventpush.GenericGrpcInvoker;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -26,17 +25,14 @@ public class MockController {
     @Resource
     private ProcessDefinitionDeployApplication processDefinitionDeployApplication;
 
-    @GrpcClient("helloWorldService")
-    private HelloWorldServiceGrpc.HelloWorldServiceBlockingStub helloWorldServiceBlockingStub;
+    @Resource
+    private GenericGrpcInvoker genericGrpcInvoker;
 
 
     @GetMapping("/say")
-    public CommonResult<Void> sayHelloWorld() {
-        HelloWorldRequest request = HelloWorldRequest.newBuilder()
-                .setName("who you are")
-                .build();
-        helloWorldServiceBlockingStub.sayHello(request).getGreeting();
-        return CommonResult.success(null);
+    public CommonResult<String> sayHelloWorld() {
+        HelloWorldResponse response = genericGrpcInvoker.invokeByConfigKey("app1");
+        return CommonResult.success(response.getGreeting());
     }
 
 
