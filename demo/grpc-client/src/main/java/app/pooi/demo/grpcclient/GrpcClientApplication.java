@@ -1,7 +1,7 @@
 package app.pooi.demo.grpcclient;
 
-import app.pooi.modules.workflow.stubs.HelloWorldRequest;
-import app.pooi.modules.workflow.stubs.HelloWorldServiceGrpc;
+import app.pooi.rpc.workflow.stubs.HelloWorldRequest;
+import app.pooi.rpc.workflow.stubs.HelloWorldServiceGrpc;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
