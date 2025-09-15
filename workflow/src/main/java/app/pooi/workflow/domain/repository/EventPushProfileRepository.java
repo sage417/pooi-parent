@@ -2,7 +2,9 @@ package app.pooi.workflow.domain.repository;
 
 import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
 
+import java.util.List;
+
 public interface EventPushProfileRepository {
 
-    EventPushProfile findByTenantId(String tenantId);
+    List<EventPushProfile> findByTenantId(String tenantId);
 }

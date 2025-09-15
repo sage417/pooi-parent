@@ -8,6 +8,7 @@ import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.Ev
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.redisson.api.RFuture;
 import org.redisson.api.RLock;
 import org.springframework.stereotype.Component;
@@ -50,20 +51,18 @@ public class EventPushApplication {
 
     @SneakyThrows
     private void pushOrderly(List<EventRecordEntity> eventRecordDOS) {
-        EventPushProfile profileDO = eventPushProfileRepository.findByTenantId(applicationInfoHolder.getApplicationCode());
+        List<EventPushProfile> profileDOs = eventPushProfileRepository.findByTenantId(applicationInfoHolder.getApplicationCode());
 
-        if (profileDO == null) {
-            return;
-        }
+        for (EventPushProfile profileDO : CollectionUtils.emptyIfNull(profileDOs)) {
+            PushStrategy pushStrategy = getPushStrategy(profileDO.getType().getValue());
 
-        PushStrategy pushStrategy = getPushStrategy(profileDO.getType());
+            for (EventRecordEntity eventRecordDO : eventRecordDOS) {
+                EventPayload eventPayload = objectMapper.readValue(eventRecordDO.getEvent(), EventPayload.class);
+                String bodyString = objectMapper.writeValueAsString(eventPayload);
+                log.info("event payload: {}", bodyString);
 
-        for (EventRecordEntity eventRecordDO : eventRecordDOS) {
-            EventPayload eventPayload = objectMapper.readValue(eventRecordDO.getEvent(), EventPayload.class);
-            String bodyString = objectMapper.writeValueAsString(eventPayload);
-            log.info("event payload: {}", bodyString);
-
-            pushStrategy.push(eventRecordDO);
+                pushStrategy.push(profileDO, eventRecordDO);
+            }
         }
     }
 

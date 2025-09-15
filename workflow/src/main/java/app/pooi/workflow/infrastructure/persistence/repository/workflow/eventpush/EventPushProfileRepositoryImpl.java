@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class EventPushProfileRepositoryImpl implements EventPushProfileRepository {
@@ -20,12 +22,12 @@ public class EventPushProfileRepositoryImpl implements EventPushProfileRepositor
     private EventPushProfileConverter converter;
 
     @Override
-    public EventPushProfile findByTenantId(String tenantId) {
-        EventPushProfileEntity entity = eventPushProfileService.getOne(
+    public List<EventPushProfile> findByTenantId(String tenantId) {
+        List<EventPushProfileEntity> entities = eventPushProfileService.list(
                 Wrappers.lambdaQuery(EventPushProfileEntity.class)
                         .eq(EventPushProfileEntity::getTenantId, tenantId)
         );
-        return converter.toModel(entity);
+        return entities.stream().map(converter::toModel).collect(Collectors.toList());
     }
 
 }

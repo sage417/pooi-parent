@@ -27,24 +27,19 @@ public class GenericGrpcInvoker {
 
     /**
      * 根据配置键动态调用gRPC服务
+     * @param target
+     * @param fullServiceName
+     * @param methodName
+     * @param request
      */
-    public <T> T invokeByConfigKey(String tenantId) {
-//        EventPushProfile profile = configRepository.findByTenantId(tenantId);
-//        if (profile == null) {
-//            return null;
-//        }
+    public <T> T unaryCall(String target, String fullServiceName, String methodName, HelloWorldRequest request) {
 
         try {
-            // TODO parse target from profile
-            Channel channel = channelManager.getChannel("discovery:///pooi-workflow-core");
+            Channel channel = channelManager.getChannel(target);
 
             // 动态调用
             MethodDescriptor<HelloWorldRequest, HelloWorldResponse> methodDescriptor =
-                    buildMethodDescriptor("app.pooi.rpc.workflow.HelloWorldService", "SayHello");
-
-            HelloWorldRequest request = HelloWorldRequest.newBuilder()
-                    .setName("your name")
-                    .build();
+                    buildMethodDescriptor(fullServiceName, methodName);
 
             HelloWorldResponse response = ClientCalls.blockingUnaryCall(
                     channel,
@@ -55,7 +50,7 @@ public class GenericGrpcInvoker {
 
             return (T) response;
         } catch (Exception e) {
-            throw new RuntimeException("gRPC调用失败", e);
+            throw new RuntimeException("rpc call failed", e);
         }
     }
 
@@ -77,13 +72,11 @@ public class GenericGrpcInvoker {
 
         public ManagedChannel getChannel(String target) {
 
-            // 先从缓存获取
             ManagedChannel channel = channelCache.get(target);
             if (channel != null) {
                 return channel;
             }
 
-            // 创建新通道
             channel = createChannel(target);
             channelCache.put(target, channel);
             return channel;
@@ -94,14 +87,13 @@ public class GenericGrpcInvoker {
             ManagedChannelBuilder<?> builder = ManagedChannelBuilder.forTarget(target);
 
             if (StringUtils.startsWithIgnoreCase(target, "static")) {
-                builder.usePlaintext(); // 静态配置通常用于开发环境
+                builder.usePlaintext();
             }
             builder.usePlaintext();
 
             return builder.build();
         }
 
-        // TODO clear unused channel
         public void refreshChannel(String configKey) {
             ManagedChannel channel = channelCache.remove(configKey);
             if (channel != null) {

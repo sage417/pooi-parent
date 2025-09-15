@@ -1,5 +1,6 @@
 package app.pooi.workflow.domain.model.workflow.eventpush;
 
+import app.pooi.workflow.domain.model.enums.EventPushType;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,7 +12,7 @@ public class EventPushProfile {
 
     private String tenantId;
 
-    private String type;
+    private EventPushType type;
 
     private String profile;
 

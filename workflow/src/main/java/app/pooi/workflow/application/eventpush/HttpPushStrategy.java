@@ -2,6 +2,7 @@ package app.pooi.workflow.application.eventpush;
 
 import app.pooi.basic.rest.CommonResult;
 import app.pooi.basic.workflow.event.EventPayload;
+import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
 import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
@@ -23,7 +24,7 @@ class HttpPushStrategy implements PushStrategy {
 
     @SneakyThrows
     @Override
-    public void push(EventRecordEntity eventRecordDO) {
+    public void push(EventPushProfile eventPushProfile, EventRecordEntity eventRecordDO) {
         EventPayload eventPayload = objectMapper.readValue(eventRecordDO.getEvent(), EventPayload.class);
         restTemplate.postForEntity("http://localhost:8080/mock/event", eventPayload, CommonResult.class);
     }

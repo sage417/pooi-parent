@@ -1,7 +1,9 @@
 package app.pooi.workflow;
 
 
+import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
 import app.pooi.workflow.infrastructure.persistence.service.workflow.eventpush.EventRecordService;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
@@ -58,7 +60,8 @@ class ArticleWorkflowIntegrationTest {
                 .count());
         TimeUnit.SECONDS.sleep(5);
         // wait
-        assertEquals(15, eventRecordRepository.count(), "");
+        assertEquals(15, eventRecordRepository.count(Wrappers.lambdaQuery(EventRecordEntity.class)
+                .eq(EventRecordEntity::getProcessInstanceId, task.getProcessInstanceId())), "");
     }
 
     @Test
