@@ -5,9 +5,10 @@ import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
 import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import liquibase.repackaged.org.apache.commons.text.StringEscapeUtils;
 import lombok.NonNull;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -24,8 +25,8 @@ class GrpcPushStrategy implements PushStrategy {
     @Override
     public void push(@NonNull EventPushProfile eventPushProfile, @NonNull EventRecordEntity eventRecordDO) {
         String grpcProfile = eventPushProfile.getProfile();
-        JsonNode profileNode = objectMapper.readTree(StringEscapeUtils.unescapeJson(grpcProfile));
-        System.out.println(StringEscapeUtils.unescapeJson(grpcProfile));
+        JsonNode profileNode = objectMapper.readTree(StringEscapeUtils.unescapeJson(StringUtils.strip(grpcProfile, "\"")));
+
         String target = profileNode.get("target").asText();
         String fullServiceName = profileNode.get("fullServiceName").asText();
         String methodName = profileNode.get("methodName").asText();

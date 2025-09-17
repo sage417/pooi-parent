@@ -6,7 +6,6 @@ import app.pooi.rpc.workflow.stubs.HelloWorldRequest;
 import app.pooi.rpc.workflow.stubs.HelloWorldResponse;
 import app.pooi.tenant.multitenancy.ApplicationInfo;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
-import app.pooi.workflow.application.ProcessDefinitionDeployApplication;
 import app.pooi.workflow.application.ProcessInstanceStartApplication;
 import app.pooi.workflow.application.eventpush.GenericGrpcInvoker;
 import org.springframework.cloud.client.ServiceInstance;
@@ -26,8 +25,8 @@ public class MockController {
     @Resource
     private ApplicationInfoHolder applicationInfoHolder;
 
-    @Resource
-    private ProcessDefinitionDeployApplication processDefinitionDeployApplication;
+//    @Resource
+//    private ProcessDefinitionDeployApplication processDefinitionDeployApplication;
 
     @Resource
     private GenericGrpcInvoker genericGrpcInvoker;
