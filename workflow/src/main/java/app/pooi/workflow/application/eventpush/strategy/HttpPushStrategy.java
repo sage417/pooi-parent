@@ -4,7 +4,7 @@ import app.pooi.basic.rest.CommonResult;
 import app.pooi.basic.workflow.event.EventPayload;
 import app.pooi.workflow.application.eventpush.PushStrategy;
 import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
-import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
+import app.pooi.workflow.domain.model.workflow.eventpush.EventRecord;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -23,7 +23,7 @@ class HttpPushStrategy extends AbstractReadProfileStrategy implements PushStrate
 
     @SneakyThrows
     @Override
-    public void push(EventPushProfile eventPushProfile, EventRecordEntity eventRecordDO) {
+    public void push(EventPushProfile eventPushProfile, EventRecord eventRecordDO) {
         EventPayload eventPayload = objectMapper.readValue(eventRecordDO.getEvent(), EventPayload.class);
         restTemplate.postForEntity("http://localhost:8080/mock/event", eventPayload, CommonResult.class);
     }

@@ -4,7 +4,7 @@ import app.pooi.rpc.workflow.stubs.HelloWorldRequest;
 import app.pooi.workflow.application.eventpush.GenericGrpcInvoker;
 import app.pooi.workflow.application.eventpush.PushStrategy;
 import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
-import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
+import app.pooi.workflow.domain.model.workflow.eventpush.EventRecord;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -21,7 +21,7 @@ class GrpcPushStrategy extends AbstractReadProfileStrategy implements PushStrate
 
     @SneakyThrows
     @Override
-    public void push(@NonNull EventPushProfile eventPushProfile, @NonNull EventRecordEntity eventRecordDO) {
+    public void push(@NonNull EventPushProfile eventPushProfile, @NonNull EventRecord eventRecordDO) {
 
         // read push profile
         String grpcProfileContent = eventPushProfile.getProfile();

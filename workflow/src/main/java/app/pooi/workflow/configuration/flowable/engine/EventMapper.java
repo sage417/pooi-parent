@@ -2,7 +2,7 @@ package app.pooi.workflow.configuration.flowable.engine;
 
 import app.pooi.basic.workflow.event.*;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
-import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
+import app.pooi.workflow.domain.model.workflow.eventpush.EventRecord;
 import org.flowable.common.engine.impl.persistence.StrongUuidGenerator;
 import org.flowable.engine.delegate.event.FlowableActivityEvent;
 import org.flowable.engine.history.HistoricProcessInstance;
@@ -47,15 +47,15 @@ public abstract class EventMapper {
     @Mapping(target = "event", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
-    abstract EventRecordEntity activityEventRecordDO(FlowableActivityEvent event);
+    abstract EventRecord activityEventRecordDO(FlowableActivityEvent event);
 
     @InheritConfiguration(name = "activityEventRecordDO")
     @Mapping(target = "eventType", expression = "java(EventTypeEnum.ACTIVITY_STARTED.getValue())")
-    abstract EventRecordEntity activityStartedEventRecordDO(FlowableActivityEvent event);
+    abstract EventRecord activityStartedEventRecordDO(FlowableActivityEvent event);
 
     @InheritConfiguration(name = "activityEventRecordDO")
     @Mapping(target = "eventType", expression = "java(EventTypeEnum.ACTIVITY_COMPLETED.getValue())")
-    abstract EventRecordEntity activityCompletedEventRecordDO(FlowableActivityEvent event);
+    abstract EventRecord activityCompletedEventRecordDO(FlowableActivityEvent event);
 
     // ---------------------------        activityEvent          ---------------------------------------//
 
@@ -89,19 +89,19 @@ public abstract class EventMapper {
     @Mapping(target = "event", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
-    abstract EventRecordEntity taskEventRecordDO(TaskEntity taskEntity);
+    abstract EventRecord taskEventRecordDO(TaskEntity taskEntity);
 
     @InheritConfiguration(name = "taskEventRecordDO")
     @Mapping(target = "eventType", expression = "java(EventTypeEnum.USER_TASK_CREATED.getValue())")
-    abstract EventRecordEntity taskCreatedEventRecordDO(TaskEntity event);
+    abstract EventRecord taskCreatedEventRecordDO(TaskEntity event);
 
     @InheritConfiguration(name = "taskEventRecordDO")
     @Mapping(target = "eventType", expression = "java(EventTypeEnum.USER_TASK_ASSIGNEE.getValue())")
-    abstract EventRecordEntity taskAssigneeEventRecordDO(TaskEntity event);
+    abstract EventRecord taskAssigneeEventRecordDO(TaskEntity event);
 
     @InheritConfiguration(name = "taskEventRecordDO")
     @Mapping(target = "eventType", expression = "java(EventTypeEnum.USER_TASK_COMPLETE.getValue())")
-    abstract EventRecordEntity taskCompletedEventRecordDO(TaskEntity event);
+    abstract EventRecord taskCompletedEventRecordDO(TaskEntity event);
 
     // ---------------------------        taskEvent          ---------------------------------------//
 
@@ -130,15 +130,15 @@ public abstract class EventMapper {
     @Mapping(target = "event", ignore = true)
     @Mapping(target = "createTime", ignore = true)
     @Mapping(target = "updateTime", ignore = true)
-    abstract EventRecordEntity processInstanceRecordDO(ExecutionEntity executionEntity);
+    abstract EventRecord processInstanceRecordDO(ExecutionEntity executionEntity);
 
     @InheritConfiguration(name = "processInstanceRecordDO")
     @Mapping(target = "eventType", expression = "java(EventTypeEnum.INSTANCE_STARTED.getValue())")
-    abstract EventRecordEntity processInstanceStartRecordDO(ExecutionEntity executionEntity);
+    abstract EventRecord processInstanceStartRecordDO(ExecutionEntity executionEntity);
 
 
     @InheritConfiguration(name = "processInstanceRecordDO")
     @Mapping(target = "eventType", expression = "java(EventTypeEnum.INSTANCE_COMPLETED.getValue())")
-    abstract EventRecordEntity processInstanceCompleteRecordDO(ExecutionEntity executionEntity);
+    abstract EventRecord processInstanceCompleteRecordDO(ExecutionEntity executionEntity);
     // ---------------------------        instanceEvent          ---------------------------------------//
 }

@@ -3,8 +3,8 @@ package app.pooi.workflow.application.eventpush;
 import app.pooi.basic.workflow.event.EventPayload;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
+import app.pooi.workflow.domain.model.workflow.eventpush.EventRecord;
 import app.pooi.workflow.domain.repository.EventPushProfileRepository;
-import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +37,7 @@ public class EventPushApplication {
     @Resource
     private Map<String, PushStrategy> pushStrategies;
 
-    public void asyncExecute(RLock fairLock, RFuture<Boolean> lockAsync, long tId, List<EventRecordEntity> eventRecordDOS) {
+    public void asyncExecute(RLock fairLock, RFuture<Boolean> lockAsync, long tId, List<EventRecord> eventRecordDOS) {
         executor.execute(() -> {
             // ensure locked
             boolean acquireLock = ensureAsyncLock(fairLock.getName(), lockAsync, tId);
@@ -50,14 +50,14 @@ public class EventPushApplication {
     }
 
     @SneakyThrows
-    private void pushOrderly(List<EventRecordEntity> eventRecordDOS) {
+    private void pushOrderly(List<EventRecord> eventRecordDOS) {
         // TODO limit 1 profile per application
         List<EventPushProfile> profileDOs = eventPushProfileRepository.findByTenantId(applicationInfoHolder.getApplicationCode());
 
         for (EventPushProfile profileDO : CollectionUtils.emptyIfNull(profileDOs)) {
             PushStrategy pushStrategy = getPushStrategy(profileDO.getType().getValue());
 
-            for (EventRecordEntity eventRecordDO : eventRecordDOS) {
+            for (EventRecord eventRecordDO : eventRecordDOS) {
                 EventPayload eventPayload = objectMapper.readValue(eventRecordDO.getEvent(), EventPayload.class);
                 String bodyString = objectMapper.writeValueAsString(eventPayload);
                 log.info("event payload: {}", bodyString);

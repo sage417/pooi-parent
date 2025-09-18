@@ -3,8 +3,8 @@ package app.pooi.workflow.configuration.flowable.engine;
 import app.pooi.basic.util.SpringContextUtil;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.application.eventpush.EventPushApplication;
-import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
-import app.pooi.workflow.infrastructure.persistence.service.workflow.eventpush.EventRecordEntityService;
+import app.pooi.workflow.domain.model.workflow.eventpush.EventRecord;
+import app.pooi.workflow.domain.repository.EventRecordRepository;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class EventListenerTransactionSynchronization implements TransactionSynchronization {
-    private static final ThreadLocal<ListMultimap<String, Supplier<EventRecordEntity>>> TL_EVENT_RECORD_SUPPLIER =
+    private static final ThreadLocal<ListMultimap<String, Supplier<EventRecord>>> TL_EVENT_RECORD_SUPPLIER =
             ThreadLocal.withInitial(ArrayListMultimap::create);
 
     private final String procInstId;
@@ -32,34 +32,35 @@ public class EventListenerTransactionSynchronization implements TransactionSynch
 
     private final ApplicationInfoHolder applicationInfoHolder;
 
-    private final EventRecordEntityService eventRecordRepository;
+    private final EventRecordRepository eventRecordRepository;
 
     private final EventPushApplication eventPushApplication;
 
 
-    public EventListenerTransactionSynchronization(String procInstId, Supplier<EventRecordEntity> recordDOSupplier) {
+    public EventListenerTransactionSynchronization(String procInstId, Supplier<EventRecord> recordDOSupplier) {
 //        this.executor = DtpRegistry.getExecutor("event-push");
         this.procInstId = procInstId;
         this.redissonClient = SpringContextUtil.getBean(RedissonClient.class);
         this.applicationInfoHolder = SpringContextUtil.getBean(ApplicationInfoHolder.class);
-        this.eventRecordRepository = SpringContextUtil.getBean(EventRecordEntityService.class);
+        this.eventRecordRepository = SpringContextUtil.getBean(EventRecordRepository.class);
         this.eventPushApplication = SpringContextUtil.getBean(EventPushApplication.class);
         TL_EVENT_RECORD_SUPPLIER.get().put(procInstId, recordDOSupplier);
     }
 
     @Override
     public void afterCommit() {
-        List<Supplier<EventRecordEntity>> runnableList = TL_EVENT_RECORD_SUPPLIER.get().removeAll(this.procInstId);
+        List<Supplier<EventRecord>> runnableList = TL_EVENT_RECORD_SUPPLIER.get().removeAll(this.procInstId);
         if (runnableList.isEmpty()) {
             return;
         }
         // 记录event record
-        List<EventRecordEntity> eventRecordDOS = prepareEventDOs(runnableList, this.procInstId);
-        this.eventRecordRepository.saveBatch(eventRecordDOS, 50);
+        List<EventRecord> eventRecordDOS = prepareEventDOs(runnableList, this.procInstId);
+        // not actually multi value insert
+        this.eventRecordRepository.saveBatch(eventRecordDOS, 100);
 
         String applicationCode = this.applicationInfoHolder.getApplicationCode();
         RLock fairLock = redissonClient.getFairLock(new StringJoiner(":").add("workflow").add("app").add(applicationCode)
-                .add("event-push").add("procInst").add(this.procInstId).add("lock").toString());
+                .add("EP").add("pId").add(this.procInstId).add("fl").toString());
         long tId = RandomUtils.nextLong();
         RFuture<Boolean> lockAsync = fairLock.tryLockAsync(240L, 180L, TimeUnit.SECONDS, tId);
         log.info("lockAsync lock: {}, tId: {}", fairLock.getName(), tId);
@@ -68,7 +69,7 @@ public class EventListenerTransactionSynchronization implements TransactionSynch
     }
 
 
-    private static List<EventRecordEntity> prepareEventDOs(List<Supplier<EventRecordEntity>> suppliers, String procInstId) {
+    private static List<EventRecord> prepareEventDOs(List<Supplier<EventRecord>> suppliers, String procInstId) {
         return suppliers.stream()
                 .map(s -> {
                     try {
