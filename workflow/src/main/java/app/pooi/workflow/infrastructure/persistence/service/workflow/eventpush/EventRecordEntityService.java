@@ -4,7 +4,7 @@ import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.Ev
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-public interface EventRecordService extends IService<EventRecordEntity> {
+public interface EventRecordEntityService extends IService<EventRecordEntity> {
 
     Page<EventRecordEntity> selectPage(Page<EventRecordEntity> page);
 }

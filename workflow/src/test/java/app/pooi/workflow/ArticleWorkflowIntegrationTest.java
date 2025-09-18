@@ -2,7 +2,7 @@ package app.pooi.workflow;
 
 
 import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
-import app.pooi.workflow.infrastructure.persistence.service.workflow.eventpush.EventRecordService;
+import app.pooi.workflow.infrastructure.persistence.service.workflow.eventpush.EventRecordEntityService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ class ArticleWorkflowIntegrationTest {
     @Resource
     private RedissonClient redissonClient;
     @Resource
-    private EventRecordService eventRecordRepository;
+    private EventRecordEntityService eventRecordRepository;
 
     @SneakyThrows
     @Test

@@ -1,20 +1,11 @@
-package app.pooi.workflow.repository.workflow;
+package app.pooi.workflow.domain.model.workflow.comment;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 
-@Accessors(chain = true)
 @Data
-@TableName("t_workflow_comment")
-public class CommentDO {
-
-    @TableId(type = IdType.AUTO)
-    private Long id;
+public class Comment {
 
     private String tenantId;
 
@@ -35,6 +26,4 @@ public class CommentDO {
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
-
-
 }

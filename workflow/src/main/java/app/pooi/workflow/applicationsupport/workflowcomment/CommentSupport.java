@@ -1,7 +1,7 @@
 package app.pooi.workflow.applicationsupport.workflowcomment;
 
-import app.pooi.workflow.repository.workflow.CommentDO;
-import app.pooi.workflow.repository.workflow.CommentRepository;
+import app.pooi.workflow.domain.model.workflow.comment.Comment;
+import app.pooi.workflow.domain.repository.CommentRepository;
 import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
@@ -38,11 +38,11 @@ public class CommentSupport {
 
 
     public void recordComment(AddCommentBO addCommentBO) {
-        CommentDO commentDO = commentConvert.convert2DO(addCommentBO);
-        boolean saved = commentRepository.save(commentDO);
+        Comment comment = commentConvert.convert2DO(addCommentBO);
+        boolean saved = commentRepository.save(comment);
     }
 
-    public List<CommentDO> listByInstanceId(String processInstanceId) {
+    public List<Comment> listByInstanceId(String processInstanceId) {
         return commentRepository.listByInstanceId(processInstanceId);
     }
 }

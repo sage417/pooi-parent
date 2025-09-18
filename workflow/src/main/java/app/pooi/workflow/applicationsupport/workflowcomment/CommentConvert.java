@@ -1,6 +1,6 @@
 package app.pooi.workflow.applicationsupport.workflowcomment;
 
-import app.pooi.workflow.repository.workflow.CommentDO;
+import app.pooi.workflow.domain.model.workflow.comment.Comment;
 import org.flowable.engine.runtime.Execution;
 import org.flowable.task.api.Task;
 import org.mapstruct.Mapper;
@@ -11,7 +11,7 @@ import org.mapstruct.MappingTarget;
 public interface CommentConvert {
 
 
-    CommentDO convert2DO(AddCommentBO bo);
+    Comment convert2DO(AddCommentBO bo);
 
     @Mapping(target = "taskId", source = "id")
     @Mapping(target = "nodeId", source = "taskDefinitionId")

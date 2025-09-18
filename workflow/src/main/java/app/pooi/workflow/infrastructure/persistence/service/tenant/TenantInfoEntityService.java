@@ -4,7 +4,7 @@ import app.pooi.workflow.infrastructure.persistence.entity.tenant.TenantInfoEnti
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-public interface TenantInfoService extends IService<TenantInfoEntity> {
+public interface TenantInfoEntityService extends IService<TenantInfoEntity> {
 
     Page<TenantInfoEntity> selectPage(Page<TenantInfoEntity> page);
 }

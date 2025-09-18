@@ -9,9 +9,9 @@
 package app.pooi.workflow.configuration.flowable.behavior;
 
 import app.pooi.workflow.configuration.flowable.props.FlowableCustomProperties;
+import app.pooi.workflow.infrastructure.persistence.service.workflow.comment.CommentEntityService;
 import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigDO;
 import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigRepository;
-import app.pooi.workflow.repository.workflow.CommentRepository;
 import app.pooi.workflow.util.BpmnModelUtil;
 import app.pooi.workflow.util.TaskEntityUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -67,7 +67,7 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
     private ApprovalDelegateConfigRepository approvalDelegateConfigRepository;
 
-    private CommentRepository commentRepository;
+    private CommentEntityService commentRepository;
 
     private FlowableCustomProperties flowableCustomProperties;
 

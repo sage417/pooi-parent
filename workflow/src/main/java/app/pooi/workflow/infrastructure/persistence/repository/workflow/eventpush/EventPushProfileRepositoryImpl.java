@@ -4,7 +4,7 @@ import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
 import app.pooi.workflow.domain.repository.EventPushProfileRepository;
 import app.pooi.workflow.infrastructure.persistence.converter.workflow.eventpush.EventPushProfileConverter;
 import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventPushProfileEntity;
-import app.pooi.workflow.infrastructure.persistence.service.workflow.eventpush.EventPushProfileService;
+import app.pooi.workflow.infrastructure.persistence.service.workflow.eventpush.EventPushProfileEntityService;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class EventPushProfileRepositoryImpl implements EventPushProfileRepository {
 
     @Resource
-    private EventPushProfileService eventPushProfileService;
+    private EventPushProfileEntityService eventPushProfileService;
 
     @Resource
     private EventPushProfileConverter converter;

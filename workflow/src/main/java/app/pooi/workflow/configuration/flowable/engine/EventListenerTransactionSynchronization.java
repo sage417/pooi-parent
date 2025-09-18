@@ -4,7 +4,7 @@ import app.pooi.basic.util.SpringContextUtil;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.application.eventpush.EventPushApplication;
 import app.pooi.workflow.infrastructure.persistence.entity.workflow.eventpush.EventRecordEntity;
-import app.pooi.workflow.infrastructure.persistence.service.workflow.eventpush.EventRecordService;
+import app.pooi.workflow.infrastructure.persistence.service.workflow.eventpush.EventRecordEntityService;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ public class EventListenerTransactionSynchronization implements TransactionSynch
 
     private final ApplicationInfoHolder applicationInfoHolder;
 
-    private final EventRecordService eventRecordRepository;
+    private final EventRecordEntityService eventRecordRepository;
 
     private final EventPushApplication eventPushApplication;
 
@@ -42,7 +42,7 @@ public class EventListenerTransactionSynchronization implements TransactionSynch
         this.procInstId = procInstId;
         this.redissonClient = SpringContextUtil.getBean(RedissonClient.class);
         this.applicationInfoHolder = SpringContextUtil.getBean(ApplicationInfoHolder.class);
-        this.eventRecordRepository = SpringContextUtil.getBean(EventRecordService.class);
+        this.eventRecordRepository = SpringContextUtil.getBean(EventRecordEntityService.class);
         this.eventPushApplication = SpringContextUtil.getBean(EventPushApplication.class);
         TL_EVENT_RECORD_SUPPLIER.get().put(procInstId, recordDOSupplier);
     }
