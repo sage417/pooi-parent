@@ -14,6 +14,7 @@ spring.datasource.dynamic:
       init:
         schema: classpath*:sql/init.sql
         data: classpath*:sql/data.sql
+
 # redis
 spring.redis:
   host: redis.pooi.app
@@ -56,13 +57,11 @@ dynamictp:
       awaitTerminationSeconds: 10
       taskWrapperNames: ["ttl", "mdc", "swTrace"]
       notifyEnabled: false
+
 management:
   endpoints:
     web.exposure:
       include: prometheus,health
-  health:
-    redis:
-      enabled: off
 
 # flowable
 flowable:
@@ -72,10 +71,9 @@ flowable:
   idm:
     enabled: false
 
-
-# logging
-logging.level:
-  org.springframework.security: DEBUG
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
 
 grpc:
   client:
@@ -84,3 +82,7 @@ grpc:
       negotiation-type: plaintext
   server:
     health-service-enabled: off
+
+# logging
+logging.level:
+  org.springframework.security: DEBUG

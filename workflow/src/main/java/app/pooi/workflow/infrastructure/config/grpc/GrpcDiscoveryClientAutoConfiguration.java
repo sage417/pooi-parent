@@ -1,4 +1,4 @@
-package app.pooi.workflow.infrastructure.grpc;
+package app.pooi.workflow.infrastructure.config.grpc;
 
 import io.grpc.NameResolverProvider;
 import io.grpc.NameResolverRegistry;

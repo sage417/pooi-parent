@@ -2,8 +2,6 @@ package app.pooi.workflow.application.eventpush;
 
 import app.pooi.rpc.workflow.stubs.HelloWorldRequest;
 import app.pooi.rpc.workflow.stubs.HelloWorldResponse;
-import app.pooi.workflow.domain.repository.EventPushProfileRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.grpc.*;
 import io.grpc.protobuf.ProtoUtils;
 import io.grpc.stub.ClientCalls;
@@ -20,24 +18,22 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 public class GenericGrpcInvoker {
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final EventPushProfileRepository configRepository;
     private final GrpcChannelManager channelManager;
 
     /**
-     * 根据配置键动态调用gRPC服务
-     * @param target
-     * @param fullServiceName
-     * @param methodName
-     * @param request
+     * unary call with fixed request and response obj
+     *
+     * @param target channel target
+     * @param fullServiceName service name
+     * @param methodName method name
+     * @param request request body
      */
     public <T> T unaryCall(String target, String fullServiceName, String methodName, HelloWorldRequest request) {
 
         try {
             Channel channel = channelManager.getChannel(target);
 
-            // 动态调用
             MethodDescriptor<HelloWorldRequest, HelloWorldResponse> methodDescriptor =
                     buildMethodDescriptor(fullServiceName, methodName);
 

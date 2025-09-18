@@ -1,4 +1,4 @@
-package app.pooi.workflow.configuration.flowable.module;
+package app.pooi.workflow.configuration.flowable.modeler;
 
 import org.flowable.ui.common.tenant.TenantProvider;
 

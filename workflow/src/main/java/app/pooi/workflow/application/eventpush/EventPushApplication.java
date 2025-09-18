@@ -51,6 +51,7 @@ public class EventPushApplication {
 
     @SneakyThrows
     private void pushOrderly(List<EventRecordEntity> eventRecordDOS) {
+        // TODO limit 1 profile per application
         List<EventPushProfile> profileDOs = eventPushProfileRepository.findByTenantId(applicationInfoHolder.getApplicationCode());
 
         for (EventPushProfile profileDO : CollectionUtils.emptyIfNull(profileDOs)) {

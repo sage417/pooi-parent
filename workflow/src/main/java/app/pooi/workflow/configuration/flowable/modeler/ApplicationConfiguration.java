@@ -1,13 +1,11 @@
-package app.pooi.workflow.configuration.flowable.module;
+package app.pooi.workflow.configuration.flowable.modeler;
 
 import org.flowable.ui.common.tenant.TenantProvider;
-import org.flowable.ui.modeler.conf.ModelerDatabaseConfiguration;
 import org.flowable.ui.modeler.properties.FlowableModelerAppProperties;
 import org.flowable.ui.modeler.service.FlowableModelQueryService;
 import org.flowable.ui.modeler.service.ModelImageService;
 import org.flowable.ui.modeler.service.ModelServiceImpl;
 import org.flowable.ui.modeler.serviceapi.ModelService;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -17,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
  * @author sage417
  */
 @Configuration
-@ImportAutoConfiguration(ModelerDatabaseConfiguration.class)
+//@ImportAutoConfiguration(ModelerDatabaseConfiguration.class)
 @EnableConfigurationProperties(FlowableModelerAppProperties.class)
 @ComponentScan(basePackages = {
         "org.flowable.ui.modeler.repository",
