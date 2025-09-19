@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
-public class EventPushProfileRepositoryImpl implements EventPushProfileRepository {
+class EventPushProfileRepositoryImpl implements EventPushProfileRepository {
 
     @Resource
     private EventPushProfileEntityService eventPushProfileService;

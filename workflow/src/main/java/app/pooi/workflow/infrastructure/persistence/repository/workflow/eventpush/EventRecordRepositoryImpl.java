@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Repository
-public class EventRecordRepositoryImpl implements EventRecordRepository {
+class EventRecordRepositoryImpl implements EventRecordRepository {
 
     @Resource
     private EventRecordEntityService eventRecordService;

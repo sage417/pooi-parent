@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class CommentEntityServiceImpl extends ServiceImpl<CommentEntityMapper, CommentEntity> implements CommentEntityService {
+class CommentEntityServiceImpl extends ServiceImpl<CommentEntityMapper, CommentEntity> implements CommentEntityService {
 
     @Override
     public List<CommentEntity> listByInstanceId(String processInstanceId) {

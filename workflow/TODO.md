@@ -1,5 +1,5 @@
 - [x] 事件推送
-- [ ] shardingsphere接入
+- [x] shardingsphere接入
 - [x] 动态加签 app.pooi.workflow.application.UserTaskAddSignApplication.addSignTask
 - [x] 分布式缓存 app.pooi.workflow.configuration.flowable.engine.ProcessDefinitionDeploymentCache
 - [ ] 分享/传阅 app.pooi.workflow.application.UserTaskOperationApplication.addCirculate

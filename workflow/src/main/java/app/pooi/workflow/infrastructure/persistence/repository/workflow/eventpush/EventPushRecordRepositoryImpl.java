@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Resource;
 
 @Repository
-public class EventPushRecordRepositoryImpl implements EventPushRecordRepository {
+class EventPushRecordRepositoryImpl implements EventPushRecordRepository {
 
     @Resource
     private EventPushRecordEntityService eventPushRecordService;

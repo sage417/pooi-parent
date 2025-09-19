@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
-public class CommentRepositoryImpl implements CommentRepository {
+class CommentRepositoryImpl implements CommentRepository {
 
     @Resource
     private CommentEntityService commentEntityService;

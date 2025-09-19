@@ -1,19 +1,13 @@
-package app.pooi.workflow.repository.workflow;
+package app.pooi.workflow.domain.model.workflow.delegate;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Accessors(chain = true)
 @Data
-@TableName("t_workflow_approval_delegate_record")
-public class ApprovalDelegateRecordDO implements Serializable {
+public class ApprovalDelegateRecord implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -21,7 +15,6 @@ public class ApprovalDelegateRecordDO implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**

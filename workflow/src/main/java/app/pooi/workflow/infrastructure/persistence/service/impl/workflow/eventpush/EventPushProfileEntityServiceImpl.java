@@ -7,5 +7,5 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class EventPushProfileEntityServiceImpl extends ServiceImpl<EventPushProfileEntityMapper, EventPushProfileEntity> implements EventPushProfileEntityService {
+class EventPushProfileEntityServiceImpl extends ServiceImpl<EventPushProfileEntityMapper, EventPushProfileEntity> implements EventPushProfileEntityService {
 }

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Repository
-public class TenantInfoRepositoryImpl implements TenantInfoRepository {
+class TenantInfoRepositoryImpl implements TenantInfoRepository {
 
     @Resource
     private TenantInfoEntityService tenantInfoService;

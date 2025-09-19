@@ -6,12 +6,12 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-package app.pooi.workflow.repository.domain.workflow;
+package app.pooi.workflow.infrastructure.persistence.mapper.workflow.delegate;
 
-import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigDO;
+import app.pooi.workflow.infrastructure.persistence.entity.workflow.delegate.ApprovalDelegateConfigEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface ApprovalDelegateConfigMapper extends BaseMapper<ApprovalDelegateConfigDO> {
+public interface ApprovalDelegateConfigEntityMapper extends BaseMapper<ApprovalDelegateConfigEntity> {
 }

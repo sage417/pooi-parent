@@ -6,7 +6,7 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-package app.pooi.workflow.repository.workflow;
+package app.pooi.workflow.infrastructure.persistence.entity.workflow.delegate;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -22,7 +22,7 @@ import java.util.List;
 @Accessors(chain = true)
 @Data
 @TableName("t_workflow_approval_delegate_config")
-public class ApprovalDelegateConfigDO implements Serializable {
+public class ApprovalDelegateConfigEntity implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;

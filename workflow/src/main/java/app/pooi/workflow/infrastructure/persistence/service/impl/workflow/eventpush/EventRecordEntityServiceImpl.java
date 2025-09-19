@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class EventRecordEntityServiceImpl extends ServiceImpl<EventRecordEntityMapper, EventRecordEntity> implements EventRecordEntityService {
+class EventRecordEntityServiceImpl extends ServiceImpl<EventRecordEntityMapper, EventRecordEntity> implements EventRecordEntityService {
 
     @Override
     public Page<EventRecordEntity> selectPage(Page<EventRecordEntity> page) {

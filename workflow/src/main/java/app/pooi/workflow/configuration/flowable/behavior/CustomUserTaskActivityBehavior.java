@@ -9,9 +9,9 @@
 package app.pooi.workflow.configuration.flowable.behavior;
 
 import app.pooi.workflow.configuration.flowable.props.FlowableCustomProperties;
+import app.pooi.workflow.domain.model.workflow.delegate.ApprovalDelegateConfig;
+import app.pooi.workflow.domain.repository.ApprovalDelegateConfigRepository;
 import app.pooi.workflow.infrastructure.persistence.service.workflow.comment.CommentEntityService;
-import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigDO;
-import app.pooi.workflow.repository.workflow.ApprovalDelegateConfigRepository;
 import app.pooi.workflow.util.BpmnModelUtil;
 import app.pooi.workflow.util.TaskEntityUtil;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -67,7 +67,7 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
     private ApprovalDelegateConfigRepository approvalDelegateConfigRepository;
 
-    private CommentEntityService commentRepository;
+    private CommentEntityService commentEntityService;
 
     private FlowableCustomProperties flowableCustomProperties;
 
@@ -245,14 +245,14 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
     protected ApprovalDelegateResult satisfyApprovalDelegate(ExecutionEntity execution, Set<String> assigneeAndCandidates, String tenantId) {
 
-        List<ApprovalDelegateConfigDO> delegateConfigDOS = this.approvalDelegateConfigRepository
+        List<ApprovalDelegateConfig> delegateConfigs = this.approvalDelegateConfigRepository
                 .selectValidByProcessDefinitionKeyAndTenantId(execution.getProcessDefinitionKey(), tenantId);
-        if (CollectionUtils.isEmpty(delegateConfigDOS)) {
+        if (CollectionUtils.isEmpty(delegateConfigs)) {
             return ApprovalDelegateResult.NO_NEED_CHANGE_ASSIGNEE_RESULT;
         }
 
         // agent root
-        ApprovalDelegateNode rootDelegateNode = getApprovalDelegateNode(delegateConfigDOS);
+        ApprovalDelegateNode rootDelegateNode = getApprovalDelegateNode(delegateConfigs);
 
         // original assignees
 
@@ -279,15 +279,15 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
     }
 
 
-    private ApprovalDelegateNode getApprovalDelegateNode(List<ApprovalDelegateConfigDO> delegateConfigDOS) {
+    private ApprovalDelegateNode getApprovalDelegateNode(List<ApprovalDelegateConfig> delegateConfigDOS) {
         ApprovalDelegateNode rootDelegateNode = new ApprovalDelegateNode("__ROOT__");
 
-        for (ApprovalDelegateConfigDO delegateConfigDO : delegateConfigDOS) {
+        for (ApprovalDelegateConfig delegateConfig : delegateConfigDOS) {
 
-            ApprovalDelegateNode approvalDelegateNode = ApprovalDelegateNode.find(rootDelegateNode, delegateConfigDO.getDelegate())
-                    .orElseGet(() -> createApprovalDelegateNode(delegateConfigDO, rootDelegateNode));
+            ApprovalDelegateNode approvalDelegateNode = ApprovalDelegateNode.find(rootDelegateNode, delegateConfig.getDelegate())
+                    .orElseGet(() -> createApprovalDelegateNode(delegateConfig, rootDelegateNode));
             // process child
-            for (String agent : delegateConfigDO.getAgents()) {
+            for (String agent : delegateConfig.getAgents()) {
                 ApprovalDelegateNode child = ApprovalDelegateNode.find(rootDelegateNode, agent).orElseGet(() -> new ApprovalDelegateNode(agent));
                 if (child.getIncoming().contains(rootDelegateNode)) {
                     child.removeParent(rootDelegateNode);
@@ -300,8 +300,8 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         return rootDelegateNode;
     }
 
-    private static ApprovalDelegateNode createApprovalDelegateNode(ApprovalDelegateConfigDO delegateConfigDO, ApprovalDelegateNode rootDelegateNode) {
-        ApprovalDelegateNode newApprovalDelegateNode = new ApprovalDelegateNode(delegateConfigDO.getDelegate());
+    private static ApprovalDelegateNode createApprovalDelegateNode(ApprovalDelegateConfig delegateConfig, ApprovalDelegateNode rootDelegateNode) {
+        ApprovalDelegateNode newApprovalDelegateNode = new ApprovalDelegateNode(delegateConfig.getDelegate());
         // set parent as root
         newApprovalDelegateNode.addParent(rootDelegateNode);
         rootDelegateNode.addChild(newApprovalDelegateNode);

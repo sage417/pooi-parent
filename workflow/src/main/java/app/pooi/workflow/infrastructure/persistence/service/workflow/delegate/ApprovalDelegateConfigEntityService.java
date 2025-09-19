@@ -6,12 +6,14 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-package app.pooi.workflow.repository.workflow;
+package app.pooi.workflow.infrastructure.persistence.service.workflow.delegate;
 
+import app.pooi.workflow.infrastructure.persistence.entity.workflow.delegate.ApprovalDelegateConfigEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
 
-public interface ApprovalDelegateConfigRepository extends IService<ApprovalDelegateConfigDO> {
-    List<ApprovalDelegateConfigDO> selectValidByProcessDefinitionKeyAndTenantId(String definitionKey, String tenantId);
+public interface ApprovalDelegateConfigEntityService extends IService<ApprovalDelegateConfigEntity> {
+
+    List<ApprovalDelegateConfigEntity> selectValidByProcessDefinitionKeyAndTenantId(String definitionKey, String tenantId);
 }
