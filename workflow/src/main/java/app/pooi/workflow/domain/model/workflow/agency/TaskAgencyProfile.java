@@ -6,31 +6,20 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-package app.pooi.workflow.infrastructure.persistence.entity.workflow.delegate;
+package app.pooi.workflow.domain.model.workflow.agency;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-import lombok.experimental.Accessors;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Accessors(chain = true)
 @Data
-@TableName("t_workflow_approval_delegate_config")
-public class ApprovalDelegateConfigEntity implements Serializable {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+public class TaskAgencyProfile implements Serializable {
 
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -51,18 +40,18 @@ public class ApprovalDelegateConfigEntity implements Serializable {
     /**
      * 代理
      */
-    private Integer proxy;
+    private Integer onBehalfOf;
 
     /**
      * 委托人
      */
-    private String delegate;
+    private String delegator;
 
     /**
      * 代理人
      */
 //    @TableField(typeHandler = )
-    private List<String> agents;
+    private List<String> delegatee;
 
     /**
      * 生效时间

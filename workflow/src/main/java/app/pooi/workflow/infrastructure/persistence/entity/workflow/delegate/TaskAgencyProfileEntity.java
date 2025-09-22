@@ -6,17 +6,25 @@
  * Vestibulum commodo. Ut rhoncus gravida arcu.
  */
 
-package app.pooi.workflow.domain.model.workflow.delegate;
+package app.pooi.workflow.infrastructure.persistence.entity.workflow.delegate;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Accessors(chain = true)
 @Data
-public class ApprovalDelegateConfig implements Serializable {
+@TableName("t_workflow_task_agency_profile")
+public class TaskAgencyProfileEntity implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
@@ -24,6 +32,7 @@ public class ApprovalDelegateConfig implements Serializable {
     /**
      * id
      */
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -37,25 +46,25 @@ public class ApprovalDelegateConfig implements Serializable {
     private String processDefinitionKey;
 
     /**
-     * 委托类型 0:无效 1:委托 2:协助
+     * 委托类型 0:无效 1:代理 2:共享
      */
     private Integer type;
 
     /**
      * 代理
      */
-    private Integer proxy;
+    private Integer onBehalfOf;
 
     /**
      * 委托人
      */
-    private String delegate;
+    private String delegator;
 
     /**
      * 代理人
      */
-//    @TableField(typeHandler = )
-    private List<String> agents;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private List<String> delegatee;
 
     /**
      * 生效时间
