@@ -68,7 +68,8 @@ CREATE TABLE `t_workflow_approval_delegate_config`
     `id`                     bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
     `tenant_id`              varchar(255) NOT NULL DEFAULT '' COMMENT '租户标识',
     `process_definition_key` varchar(255) NOT NULL DEFAULT '' COMMENT '流程定义id',
-    `type`                   tinyint UNSIGNED NOT NULL DEFAULT 0 COMMENT '委托类型 0:无效 1:全权委托 2:协助审批',
+    `type` tinyint UNSIGNED NOT NULL DEFAULT 0 COMMENT '委托类型 0:无效 1:委托 2:审批',
+    `proxy` tinyint UNSIGNED NOT NULL DEFAULT 0 COMMENT '代理类型',
     `delegate`               varchar(255) NOT NULL COMMENT '委托人',
     `agents`                 json COMMENT '代理人',
     `valid_time`             datetime(3) NULL COMMENT '生效时间',
@@ -99,4 +100,8 @@ CREATE TABLE `t_workflow_approval_delegate_record`
   DEFAULT CHARSET = utf8mb4 COMMENT '审批委托记录表';
 
 insert into t_workflow_event_push_profile (tenant_id, type, profile)
-values ('app1', 'http', '{}');
+values ('app1', 'grpc', '{
+  "target": "discovery:///pooi-workflow-core",
+  "fullServiceName": "app.pooi.rpc.workflow.HelloWorldService",
+  "methodName": "SayHello"
+}');

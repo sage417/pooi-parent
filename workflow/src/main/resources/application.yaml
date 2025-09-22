@@ -12,8 +12,8 @@ spring.datasource.dynamic:
       username: sa
       password:
       init:
-        schema: classpath*:sql/init.sql
-        data: classpath*:sql/data.sql
+        schema: classpath*:sql/tenant_ddl.sql
+        data: classpath*:sql/tenant_dml.sql
 
 # redis
 spring.redis:
