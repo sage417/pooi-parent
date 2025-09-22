@@ -37,9 +37,14 @@ public class ApprovalDelegateConfig implements Serializable {
     private String processDefinitionKey;
 
     /**
-     * 委托类型 0:无效 1:全权委托 2:协助审批
+     * 委托类型 0:无效 1:委托 2:协助
      */
     private Integer type;
+
+    /**
+     * 代理
+     */
+    private Integer proxy;
 
     /**
      * 委托人
