@@ -1,4 +1,4 @@
-package app.pooi.basic.workflow.event;
+package app.pooi.workflow.domain.event;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

@@ -1,5 +1,6 @@
-package app.pooi.basic.workflow.event;
+package app.pooi.workflow.infrastructure.messaging.event;
 
+import app.pooi.workflow.domain.event.WorkFlowEvent;
 import lombok.Data;
 import lombok.experimental.Accessors;
 

@@ -1,7 +1,7 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
-import app.pooi.basic.workflow.event.*;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
+import app.pooi.workflow.domain.event.*;
 import app.pooi.workflow.domain.model.workflow.eventpush.EventRecord;
 import org.flowable.common.engine.impl.persistence.StrongUuidGenerator;
 import org.flowable.engine.delegate.event.FlowableActivityEvent;

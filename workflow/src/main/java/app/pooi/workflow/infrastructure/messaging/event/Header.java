@@ -1,4 +1,4 @@
-package app.pooi.basic.workflow.event;
+package app.pooi.workflow.infrastructure.messaging.event;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,10 +1,10 @@
 package app.pooi.workflow.application.eventpush.strategy;
 
 import app.pooi.basic.rest.CommonResult;
-import app.pooi.basic.workflow.event.EventPayload;
 import app.pooi.workflow.application.eventpush.PushStrategy;
 import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
 import app.pooi.workflow.domain.model.workflow.eventpush.EventRecord;
+import app.pooi.workflow.infrastructure.messaging.event.EventPayload;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

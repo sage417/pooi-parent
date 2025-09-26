@@ -1,7 +1,9 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
-import app.pooi.basic.workflow.event.*;
+import app.pooi.workflow.domain.event.*;
 import app.pooi.workflow.domain.model.workflow.eventpush.EventRecord;
+import app.pooi.workflow.infrastructure.messaging.event.EventPayload;
+import app.pooi.workflow.infrastructure.messaging.event.Header;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Setter;
 import lombok.SneakyThrows;

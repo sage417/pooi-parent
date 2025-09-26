@@ -1,10 +1,10 @@
 package app.pooi.workflow.application.eventpush;
 
-import app.pooi.basic.workflow.event.EventPayload;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.domain.model.workflow.eventpush.EventPushProfile;
 import app.pooi.workflow.domain.model.workflow.eventpush.EventRecord;
 import app.pooi.workflow.domain.repository.EventPushProfileRepository;
+import app.pooi.workflow.infrastructure.messaging.event.EventPayload;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
