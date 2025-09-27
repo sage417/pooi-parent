@@ -8,8 +8,8 @@ spring.datasource.dynamic:
   strict: true
   datasource:
     core:
-      url: jdbc:h2:mem:pooi-workflow-core;DB_CLOSE_DELAY=-1;MODE=MySQL
-      username: sa
+      url: jdbc:mariadb://nas.pooi.app:13306/workflow-core
+      username: root
       password:
       init:
         schema: classpath*:sql/tenant_ddl.sql

@@ -24,4 +24,9 @@ public class TaskAgencyProfileRepositoryImpl implements TaskAgencyProfileReposit
         List<TaskAgencyProfileEntity> entities = approvalDelegateConfigEntityService.selectValidByProcessDefinitionKeyAndTenantId(definitionKey, tenantId);
         return entities.stream().map(converter::toModel).toList();
     }
+
+    @Override
+    public void save(TaskAgencyProfile profile) {
+        approvalDelegateConfigEntityService.save(converter.toEntity(profile));
+    }
 }

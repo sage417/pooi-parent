@@ -8,6 +8,7 @@
 
 package app.pooi.workflow.domain.model.workflow.agency;
 
+import app.pooi.workflow.domain.model.enums.TaskAgencyType;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -35,7 +36,7 @@ public class TaskAgencyProfile implements Serializable {
     /**
      * 委托类型 0:无效 1:委托 2:协助
      */
-    private Integer type;
+    private TaskAgencyType agencyType;
 
     /**
      * 代理

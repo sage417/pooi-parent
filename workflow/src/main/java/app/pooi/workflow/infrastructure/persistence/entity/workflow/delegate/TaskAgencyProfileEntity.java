@@ -23,7 +23,7 @@ import java.util.List;
 
 @Accessors(chain = true)
 @Data
-@TableName("t_workflow_task_agency_profile")
+@TableName(value = "t_workflow_task_agency_profile", autoResultMap = true)
 public class TaskAgencyProfileEntity implements Serializable {
 
     @Serial

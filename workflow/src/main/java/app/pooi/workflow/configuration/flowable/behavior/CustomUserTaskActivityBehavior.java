@@ -8,19 +8,16 @@
 
 package app.pooi.workflow.configuration.flowable.behavior;
 
+import app.pooi.workflow.application.TaskAgencyApplication;
 import app.pooi.workflow.configuration.flowable.props.FlowableCustomProperties;
-import app.pooi.workflow.domain.model.workflow.agency.TaskAgencyProfile;
+import app.pooi.workflow.domain.model.workflow.agency.TaskDelegateResult;
 import app.pooi.workflow.domain.repository.TaskAgencyProfileRepository;
-import app.pooi.workflow.infrastructure.persistence.service.workflow.comment.CommentEntityService;
 import app.pooi.workflow.util.BpmnModelUtil;
 import app.pooi.workflow.util.TaskEntityUtil;
+import app.pooi.workflow.util.TravelNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.FlowNode;
@@ -63,17 +60,16 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
-    private TaskAgencyProfileRepository approvalDelegateConfigRepository;
+    private final FlowableCustomProperties flowableCustomProperties;
 
-    private CommentEntityService commentEntityService;
-
-    private FlowableCustomProperties flowableCustomProperties;
+    private final TaskAgencyApplication taskAgencyApplication;
 
     public CustomUserTaskActivityBehavior(UserTask userTask,
-                                          TaskAgencyProfileRepository approvalDelegateConfigRepository,
+                                          TaskAgencyProfileRepository taskAgencyProfileRepository,
+                                          TaskAgencyApplication taskAgencyApplication,
                                           FlowableCustomProperties flowableCustomProperties) {
         super(userTask);
-        this.approvalDelegateConfigRepository = approvalDelegateConfigRepository;
+        this.taskAgencyApplication = taskAgencyApplication;
         this.flowableCustomProperties = flowableCustomProperties;
     }
 
@@ -163,29 +159,9 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
             handleAssignments(taskService, beforeContext.getAssignee(), beforeContext.getOwner(), beforeContext.getCandidateUsers(),
                     beforeContext.getCandidateGroups(), task, expressionManager, execution, processEngineConfiguration);
-
-            ApprovalDelegateResult approvalDelegateResult;
-            if (BooleanUtils.isTrue(flowableCustomProperties.getApprovalDelegateEnable())
-                    && (approvalDelegateResult = satisfyApprovalDelegate((ExecutionEntity) execution, TaskEntityUtil.getAssigneeAndCandidates(task), task.getTenantId())).isNeedDoDelegate()) {
-                // A -> A1, (B1, ...
-                TaskHelper.changeTaskAssignee(task, "");
-
-                Set<String> candidatesToAdd = approvalDelegateResult.getCandidatesToAdd();
-                Set<String> candidatesToRemove = approvalDelegateResult.getCandidatesToRemove();
-
-                for (String userId : candidatesToRemove) {
-                    IdentityLinkUtil.deleteTaskIdentityLinks(task, userId, null, IdentityLinkType.CANDIDATE);
-                }
-
-                IdentityLinkService identityLinkService = processEngineConfiguration.getIdentityLinkServiceConfiguration()
-                        .getIdentityLinkService();
-                List<IdentityLinkEntity> identityLinkEntities = identityLinkService.addCandidateUsers(task.getId(), candidatesToAdd);
-
-                if (identityLinkEntities != null && !identityLinkEntities.isEmpty()) {
-                    IdentityLinkUtil.handleTaskIdentityLinkAdditions(task, identityLinkEntities);
-                }
-            }
-
+            // ---------- task agency ---------- //
+            taskAgencyAfterHandleAssignments((ExecutionEntity) execution, task, processEngineConfiguration);
+            // ---------- task agency ---------- //
 
             if (processEngineConfiguration.getCreateUserTaskInterceptor() != null) {
                 CreateUserTaskAfterContext afterContext = new CreateUserTaskAfterContext(userTask, task, execution);
@@ -226,6 +202,41 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         }
     }
 
+    private void taskAgencyAfterHandleAssignments(ExecutionEntity execution, TaskEntity task, ProcessEngineConfigurationImpl processEngineConfiguration) {
+
+        TaskDelegateResult approvalDelegateResult;
+        if (BooleanUtils.isTrue(flowableCustomProperties.getApprovalDelegateEnable())
+                && (approvalDelegateResult = taskAgencyApplication.matchTaskDelegate(execution,
+                TaskEntityUtil.getAssigneeAndCandidates(task), task.getTenantId())).isNeedDoDelegate()) {
+
+            Set<String> assigneeAfterDelegate = approvalDelegateResult.getAssigneeAfterDelegate().getChildren().stream()
+                    .map(TravelNode::getValue).collect(Collectors.toSet());
+
+            // update task assignee
+            String newAssignee = null;
+            if (assigneeAfterDelegate.size() == 1) {
+                newAssignee = assigneeAfterDelegate.iterator().next();
+                assigneeAfterDelegate.remove(newAssignee);
+            }
+            // task service change assignee
+            TaskHelper.changeTaskAssignee(task, newAssignee);
+
+            // update candidates
+            for (String userId : Sets.difference(TaskEntityUtil.getCandidates(task), assigneeAfterDelegate)) {
+                IdentityLinkUtil.deleteTaskIdentityLinks(task, userId, null, IdentityLinkType.CANDIDATE);
+            }
+
+            IdentityLinkService identityLinkService = processEngineConfiguration.getIdentityLinkServiceConfiguration()
+                    .getIdentityLinkService();
+            List<IdentityLinkEntity> identityLinkEntities = identityLinkService.addCandidateUsers(task.getId(),
+                    Sets.difference(assigneeAfterDelegate, TaskEntityUtil.getCandidates(task)));
+
+            if (identityLinkEntities != null && !identityLinkEntities.isEmpty()) {
+                IdentityLinkUtil.handleTaskIdentityLinkAdditions(task, identityLinkEntities);
+            }
+        }
+    }
+
 
     protected void preHandleAssignments(CreateUserTaskBeforeContext beforeContext, ExpressionManager expressionManager, TaskEntity task, DelegateExecution execution) {
         if (StringUtils.isNotEmpty(beforeContext.getAssignee())) {
@@ -239,87 +250,6 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
                 // to something when assignee is empty here
             }
         }
-    }
-
-    protected ApprovalDelegateResult satisfyApprovalDelegate(ExecutionEntity execution, Set<String> assigneeAndCandidates, String tenantId) {
-
-        List<TaskAgencyProfile> delegateConfigs = this.approvalDelegateConfigRepository
-                .selectValidByProcessDefinitionKeyAndTenantId(execution.getProcessDefinitionKey(), tenantId);
-        if (CollectionUtils.isEmpty(delegateConfigs)) {
-            return ApprovalDelegateResult.NO_NEED_CHANGE_ASSIGNEE_RESULT;
-        }
-
-        // delegate tree
-        ApprovalDelegateNode delegateTree = getApprovalDelegateNode(delegateConfigs, assigneeAndCandidates);
-
-//        // original assignees
-//        ApprovalDelegateNode original = ApprovalDelegateNode.ORIGINAL();
-//
-//        for (String account : assigneeAndCandidates) {
-//            ApprovalDelegateNode approvalDelegateNode = new ApprovalDelegateNode(account);
-//            original.addChild(approvalDelegateNode);
-//        }
-//        // 减枝
-//        for (String account : assigneeAndCandidates) {
-//            HashMap<ApprovalDelegateNode, ApprovalDelegateNode> copiedNodes = new HashMap<>();
-//            Optional<ApprovalDelegateNode> optionalApprovalDelegateNode = ApprovalDelegateNode.find(delegateTree, account);
-//            optionalApprovalDelegateNode.ifPresent(approvalDelegateNode -> approvalDelegateNode.copyDownwardsByBFS(copiedNodes));
-//        }
-        Set<ApprovalDelegateNode> leafNodes = delegateTree.findLeafNodes();
-        Set<String> assigneeAfterDelegate = leafNodes.stream().map(ApprovalDelegateNode::getCurrent).collect(Collectors.toSet());
-
-        Sets.SetView<String> addDiff = Sets.difference(assigneeAfterDelegate, assigneeAndCandidates);
-        Sets.SetView<String> removeDiff = Sets.difference(assigneeAndCandidates, assigneeAfterDelegate);
-        return new ApprovalDelegateResult().setNeedDoDelegate(!addDiff.isEmpty() || !removeDiff.isEmpty())
-                .setCandidatesToAdd(addDiff)
-                .setCandidatesToRemove(removeDiff);
-    }
-
-
-    private ApprovalDelegateNode getApprovalDelegateNode(List<TaskAgencyProfile> delegateConfigDOS, Set<String> assigneeAndCandidates) {
-        ApprovalDelegateNode rootDelegateNode = new ApprovalDelegateNode("__ROOT__");
-
-        for (TaskAgencyProfile delegateConfig : delegateConfigDOS) {
-            if (!assigneeAndCandidates.contains(delegateConfig.getDelegator())) {
-                continue;
-            }
-            ApprovalDelegateNode approvalDelegateNode = ApprovalDelegateNode.find(rootDelegateNode, delegateConfig.getDelegator())
-                    .orElseGet(() -> createApprovalDelegateNode(delegateConfig, rootDelegateNode));
-            // process child
-            for (String agent : delegateConfig.getDelegatee()) {
-                ApprovalDelegateNode child = ApprovalDelegateNode.find(rootDelegateNode, agent).orElseGet(() -> new ApprovalDelegateNode(agent));
-//                if (child.getIncoming().contains(rootDelegateNode)) {
-//                    child.removeParent(rootDelegateNode);
-//                    rootDelegateNode.removeChild(child);
-//                }
-                child.addParent(approvalDelegateNode);
-                approvalDelegateNode.addChild(child);
-            }
-        }
-        return rootDelegateNode;
-    }
-
-    private static ApprovalDelegateNode createApprovalDelegateNode(TaskAgencyProfile delegateConfig, ApprovalDelegateNode rootDelegateNode) {
-        ApprovalDelegateNode newApprovalDelegateNode = new ApprovalDelegateNode(delegateConfig.getDelegator());
-        // set parent as root
-        newApprovalDelegateNode.addParent(rootDelegateNode);
-        rootDelegateNode.addChild(newApprovalDelegateNode);
-        return newApprovalDelegateNode;
-    }
-
-
-    @Accessors(chain = true)
-    @Getter
-    @Setter
-    protected static class ApprovalDelegateResult {
-
-        static ApprovalDelegateResult NO_NEED_CHANGE_ASSIGNEE_RESULT = new ApprovalDelegateResult().setNeedDoDelegate(false);
-
-        private boolean needDoDelegate;
-
-        private Set<String> candidatesToAdd;
-
-        private Set<String> candidatesToRemove;
     }
 
 

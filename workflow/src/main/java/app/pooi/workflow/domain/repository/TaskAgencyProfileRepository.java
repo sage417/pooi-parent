@@ -7,4 +7,6 @@ import java.util.List;
 public interface TaskAgencyProfileRepository {
 
     List<TaskAgencyProfile> selectValidByProcessDefinitionKeyAndTenantId(String definitionKey, String tenantId);
+
+    void save(TaskAgencyProfile profile);
 }

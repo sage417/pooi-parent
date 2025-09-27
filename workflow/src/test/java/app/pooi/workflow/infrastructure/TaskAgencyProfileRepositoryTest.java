@@ -29,5 +29,6 @@ public class TaskAgencyProfileRepositoryTest {
     public void testSelectValidByProcessDefinitionKeyAndTenantId() {
         List<TaskAgencyProfile> taskAgencyProfiles = taskAgencyProfileRepository.selectValidByProcessDefinitionKeyAndTenantId("", tenantInfoHolder.getCurrentTenantId());
         Assertions.assertThat(taskAgencyProfiles).hasSize(1);
+        Assertions.assertThat(taskAgencyProfiles.getFirst().getDelegatee()).hasSize(1);
     }
 }

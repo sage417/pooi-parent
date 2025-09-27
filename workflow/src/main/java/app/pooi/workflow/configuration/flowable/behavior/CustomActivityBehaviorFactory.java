@@ -8,6 +8,7 @@
 
 package app.pooi.workflow.configuration.flowable.behavior;
 
+import app.pooi.workflow.application.TaskAgencyApplication;
 import app.pooi.workflow.configuration.flowable.props.FlowableCustomProperties;
 import app.pooi.workflow.domain.repository.TaskAgencyProfileRepository;
 import org.flowable.bpmn.model.UserTask;
@@ -17,15 +18,17 @@ import org.flowable.engine.impl.bpmn.parser.factory.DefaultActivityBehaviorFacto
 import javax.annotation.Resource;
 
 public class CustomActivityBehaviorFactory extends DefaultActivityBehaviorFactory {
-
     @Resource
     private TaskAgencyProfileRepository approvalDelegateConfigRepository;
+
+    @Resource
+    private TaskAgencyApplication taskAgencyApplication;
 
     @Resource
     private FlowableCustomProperties flowableCustomProperties;
 
     @Override
     public UserTaskActivityBehavior createUserTaskActivityBehavior(UserTask userTask) {
-        return new CustomUserTaskActivityBehavior(userTask, approvalDelegateConfigRepository, flowableCustomProperties);
+        return new CustomUserTaskActivityBehavior(userTask, approvalDelegateConfigRepository, taskAgencyApplication, flowableCustomProperties);
     }
 }
