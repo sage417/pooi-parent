@@ -16,7 +16,6 @@ import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.persistence.entity.HistoricProcessInstanceEntity;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import javax.annotation.Resource;
 
@@ -43,8 +42,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
                 .setEvent(activityStartedEvent);
         eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
 
-        TransactionSynchronizationManager.registerSynchronization(
-                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
+        EventListenerTransactionSynchronization.registerOnce(event.getProcessInstanceId(), () -> eventRecordDO);
     }
 
     @SneakyThrows
@@ -61,8 +59,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
                 .setEvent(activityCompletedEvent);
         eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
 
-        TransactionSynchronizationManager.registerSynchronization(
-                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
+        EventListenerTransactionSynchronization.registerOnce(event.getProcessInstanceId(), () -> eventRecordDO);
     }
 
     @Override
@@ -79,8 +76,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
                 .setEvent(userTaskCreatedEvent);
         eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
 
-        TransactionSynchronizationManager.registerSynchronization(
-                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
+        EventListenerTransactionSynchronization.registerOnce(event.getProcessInstanceId(), () -> eventRecordDO);
     }
 
     @Override
@@ -98,8 +94,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
                 .setEvent(userTaskAssigneeEvent);
         eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
 
-        TransactionSynchronizationManager.registerSynchronization(
-                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
+        EventListenerTransactionSynchronization.registerOnce(event.getProcessInstanceId(), () -> eventRecordDO);
     }
 
     @Override
@@ -116,8 +111,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
                 .setEvent(userTaskCompletedEvent);
         eventRecordDO.setEvent(objectMapper.writeValueAsString(eventPayload));
 
-        TransactionSynchronizationManager.registerSynchronization(
-                new EventListenerTransactionSynchronization(event.getProcessInstanceId(), () -> eventRecordDO));
+        EventListenerTransactionSynchronization.registerOnce(event.getProcessInstanceId(), () -> eventRecordDO);
     }
 
     @Override
@@ -135,7 +129,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
                 .setEvent(instanceStartedEvent);
         eventRecordDO.setEvent(this.objectMapper.writeValueAsString(eventPayload));
 
-        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(executionEntity.getProcessInstanceId(), () -> eventRecordDO));
+        EventListenerTransactionSynchronization.registerOnce(executionEntity.getProcessInstanceId(), () -> eventRecordDO);
     }
 
     @Override
@@ -153,7 +147,7 @@ public class WorkflowFlowableEngineEventListener extends AbstractFlowableEngineE
                 .setEvent(instanceCompletedEvent);
         eventRecordDO.setEvent(this.objectMapper.writeValueAsString(eventPayload));
 
-        TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(executionEntity.getProcessInstanceId(), () -> eventRecordDO));
+        EventListenerTransactionSynchronization.registerOnce(executionEntity.getProcessInstanceId(), () -> eventRecordDO);
     }
 
 }

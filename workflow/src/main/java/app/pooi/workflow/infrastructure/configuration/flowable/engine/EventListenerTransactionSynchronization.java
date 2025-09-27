@@ -13,6 +13,7 @@ import org.redisson.api.RFuture;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,15 +37,22 @@ public class EventListenerTransactionSynchronization implements TransactionSynch
 
     private final EventPushApplication eventPushApplication;
 
+    public static void registerOnce(String procInstId, Supplier<EventRecord> recordSupplier) {
+        ListMultimap<String, Supplier<EventRecord>> eventRecords = TL_EVENT_RECORD_SUPPLIER.get();
 
-    public EventListenerTransactionSynchronization(String procInstId, Supplier<EventRecord> recordDOSupplier) {
-//        this.executor = DtpRegistry.getExecutor("event-push");
+        if (eventRecords.get(procInstId).isEmpty()) {
+            TransactionSynchronizationManager.registerSynchronization(new EventListenerTransactionSynchronization(procInstId));
+        }
+        eventRecords.put(procInstId, recordSupplier);
+    }
+
+    private EventListenerTransactionSynchronization(String procInstId) {
         this.procInstId = procInstId;
         this.redissonClient = SpringContextUtil.getBean(RedissonClient.class);
         this.applicationInfoHolder = SpringContextUtil.getBean(ApplicationInfoHolder.class);
         this.eventRecordRepository = SpringContextUtil.getBean(EventRecordRepository.class);
         this.eventPushApplication = SpringContextUtil.getBean(EventPushApplication.class);
-        TL_EVENT_RECORD_SUPPLIER.get().put(procInstId, recordDOSupplier);
+//        TL_EVENT_RECORD_SUPPLIER.get().put(procInstId, recordDOSupplier);
     }
 
     @Override
