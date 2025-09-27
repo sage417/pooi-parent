@@ -36,7 +36,7 @@ class CommentRepositoryImpl implements CommentRepository {
         if (flushCache) {
             commentEntityService.save(commentEntity);
             deque.forEach(commentEntityService::save);
-            deque.clear();
+            TRANSACTIONAL_COMMENT_ENTITY_HOLDER.remove();
         } else {
             // cache first time
             if (deque.isEmpty()) {
@@ -51,14 +51,13 @@ class CommentRepositoryImpl implements CommentRepository {
                                 deque.forEach(commentEntityService::save);
                             }
                         } finally {
-                            deque.clear();
+                            TRANSACTIONAL_COMMENT_ENTITY_HOLDER.remove();
                         }
                     }
 
                     @Override
                     public void afterCompletion(int status) {
-                        log.info("comment flush completed");
-                        TRANSACTIONAL_COMMENT_ENTITY_HOLDER.get().clear();
+                        TRANSACTIONAL_COMMENT_ENTITY_HOLDER.remove();
                     }
                 });
             }
