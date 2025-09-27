@@ -1,6 +1,7 @@
 package app.pooi.workflow.configuration.flowable.engine;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
+import app.pooi.workflow.infrastructure.configuration.flowable.engine.ProcessDefinitionDeploymentCache;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.spring.impl.test.FlowableSpringExtension;
