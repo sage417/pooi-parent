@@ -1,4 +1,4 @@
-package app.pooi.workflow.application;
+package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
 import app.pooi.workflow.domain.service.comment.CommentService;
@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
-public class UserTaskAddSignApplication {
+public class UserTaskAddSignAppService {
 
     @Resource
     private TaskService taskService;

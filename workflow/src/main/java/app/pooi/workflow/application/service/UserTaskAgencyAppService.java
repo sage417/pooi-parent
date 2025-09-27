@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class TaskAgencyAppService {
+public class UserTaskAgencyAppService {
 
     @Resource
     private TaskAgencyProfileRepository taskAgencyProfileRepository;

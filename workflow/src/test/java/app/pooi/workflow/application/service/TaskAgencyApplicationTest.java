@@ -29,7 +29,7 @@ class TaskAgencyApplicationTest {
         taskDelegateNode.addChild(delegateNodeC);
 
 
-        TaskAgencyAppService taskAgencyAppService = new TaskAgencyAppService();
+        UserTaskAgencyAppService taskAgencyAppService = new UserTaskAgencyAppService();
         TaskApprovalNode approvalNode = taskAgencyAppService.calculateApprovalDelegateRelation(taskApprovalNode, taskDelegateNode);
         // D E F
         Assertions.assertThat(approvalNode.getChildren()).hasSize(3);

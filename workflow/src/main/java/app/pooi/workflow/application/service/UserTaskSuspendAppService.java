@@ -1,4 +1,4 @@
-package app.pooi.workflow.application;
+package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
 import app.pooi.workflow.domain.service.comment.CommentService;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Resource;
 
 @Component
-public class UserTaskSuspendApplication {
+public class UserTaskSuspendAppService {
 
     @Resource
     private TaskService taskService;

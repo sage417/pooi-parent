@@ -1,4 +1,4 @@
-package app.pooi.workflow.application;
+package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
 import app.pooi.workflow.domain.service.comment.CommentService;
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class ProcessInstanceMoveApplication {
+public class ProcessInstanceMoveAppService {
 
     @Resource
     private RuntimeService runtimeService;

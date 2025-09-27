@@ -1,4 +1,4 @@
-package app.pooi.workflow.application;
+package app.pooi.workflow.application.service;
 
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,7 @@ import javax.annotation.Resource;
 
 @Slf4j
 @Component
-public class ProcessInstanceStartApplication {
+public class ProcessInstanceStartAppService {
 
     @Resource
     private RuntimeService runtimeService;

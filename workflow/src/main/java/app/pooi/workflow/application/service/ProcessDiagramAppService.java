@@ -1,4 +1,4 @@
-package app.pooi.workflow.application;
+package app.pooi.workflow.application.service;
 
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.application.entity.FlowElementEntity;
@@ -17,7 +17,7 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class ProcessDiagramApplication {
+public class ProcessDiagramAppService {
 
     @Resource
     private RepositoryService repositoryService;

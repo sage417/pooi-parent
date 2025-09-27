@@ -1,6 +1,7 @@
 package app.pooi.workflow.application;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
+import app.pooi.workflow.application.service.UserTaskSuspendAppService;
 import app.pooi.workflow.domain.service.comment.CommentService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ class UserTaskSuspendApplicationTest {
     private CommentService commentService;
 
     @Resource
-    private UserTaskSuspendApplication userTaskSuspendApplication;
+    private UserTaskSuspendAppService userTaskSuspendAppService;
 
     @Test
     @SneakyThrows
@@ -54,7 +55,7 @@ class UserTaskSuspendApplicationTest {
         variables.put("approved", true);
         taskService.setAssignee(task.getId(), "target");
 
-        userTaskSuspendApplication.suspend(task.getId());
+        userTaskSuspendAppService.suspend(task.getId());
         assertEquals(1, taskService.createTaskQuery().suspended().count());
         assertEquals(0, taskService.createTaskQuery().active().count());
 
@@ -76,12 +77,12 @@ class UserTaskSuspendApplicationTest {
         variables.put("approved", true);
         taskService.setAssignee(task.getId(), "target");
 
-        userTaskSuspendApplication.suspend(task.getId());
+        userTaskSuspendAppService.suspend(task.getId());
         assertEquals(1, taskService.createTaskQuery().suspended().count());
         assertEquals(0, taskService.createTaskQuery().active().count());
 
 
-        userTaskSuspendApplication.active(task.getId());
+        userTaskSuspendAppService.active(task.getId());
         assertEquals(0, taskService.createTaskQuery().suspended().count());
         assertEquals(1, taskService.createTaskQuery().active().count());
     }

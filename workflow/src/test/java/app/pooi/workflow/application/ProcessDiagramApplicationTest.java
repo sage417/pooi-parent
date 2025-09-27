@@ -2,6 +2,7 @@ package app.pooi.workflow.application;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
 import app.pooi.workflow.application.entity.FlowElementEntity;
+import app.pooi.workflow.application.service.ProcessDiagramAppService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -23,7 +24,7 @@ import static app.pooi.workflow.TenantInfoHolderExtension.TENANT_APP_1;
 class ProcessDiagramApplicationTest {
 
     @Resource
-    private ProcessDiagramApplication processDiagramApplication;
+    private ProcessDiagramAppService processDiagramApplication;
 
     @Test
     @SneakyThrows

@@ -1,6 +1,8 @@
 package app.pooi.workflow.application;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
+import app.pooi.workflow.application.service.UserTaskAddSignAppService;
+import app.pooi.workflow.application.service.UserTaskOperationAppService;
 import app.pooi.workflow.domain.service.comment.CommentService;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
@@ -36,10 +38,10 @@ class UserTaskOperationApplicationTest {
     private TaskService taskService;
 
     @Resource
-    private UserTaskOperationApplication userTaskOperationApplication;
+    private UserTaskOperationAppService userTaskOperationAppService;
 
     @Resource
-    private UserTaskAddSignApplication userTaskAddSignApplication;
+    private UserTaskAddSignAppService userTaskAddSignAppService;
 
     @Resource
     private CommentService commentService;
@@ -60,7 +62,7 @@ class UserTaskOperationApplicationTest {
         variables.put("approved", true);
         taskService.setAssignee(task.getId(), "target");
 
-        userTaskOperationApplication.addCirculate(task.getId(), Sets.newHashSet("c1", "c2"));
+        userTaskOperationAppService.addCirculate(task.getId(), Sets.newHashSet("c1", "c2"));
         taskService.complete(task.getId(), variables);
         assertEquals(0, runtimeService.createProcessInstanceQuery().count());
     }
@@ -81,7 +83,7 @@ class UserTaskOperationApplicationTest {
         variables.put("approved", true);
         taskService.setAssignee(task.getId(), "target");
 
-        userTaskAddSignApplication.addSignTask(task.getId(), Sets.newHashSet("userId1"));
+        userTaskAddSignAppService.addSignTask(task.getId(), Sets.newHashSet("userId1"));
         assertEquals(2, taskService.createTaskQuery().count());
         assertEquals(0, taskService.createTaskQuery().taskAssignee("target").count());
         assertEquals(1, taskService.createTaskQuery().taskAssignee("userId1").count());
@@ -93,7 +95,7 @@ class UserTaskOperationApplicationTest {
         List<Task> subTasks = taskService.getSubTasks(task1.getId());
         for (Task subTask : subTasks) {
             assertEquals(taskService.getIdentityLinksForTask(subTask.getId()).size(), 1);
-            userTaskOperationApplication.completeTask(subTask.getId(), variables);
+            userTaskOperationAppService.completeTask(subTask.getId(), variables);
         }
         assertEquals(0, taskService.createTaskQuery().count());
 

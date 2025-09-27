@@ -5,8 +5,8 @@ import app.pooi.rpc.workflow.stubs.HelloWorldRequest;
 import app.pooi.rpc.workflow.stubs.HelloWorldResponse;
 import app.pooi.tenant.multitenancy.ApplicationInfo;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
-import app.pooi.workflow.application.ProcessInstanceStartApplication;
 import app.pooi.workflow.application.eventpush.GenericGrpcInvoker;
+import app.pooi.workflow.application.service.ProcessInstanceStartAppService;
 import app.pooi.workflow.infrastructure.messaging.event.EventPayload;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -20,7 +20,7 @@ import java.util.List;
 public class MockController {
 
     @Resource
-    private ProcessInstanceStartApplication processInstanceStartApplication;
+    private ProcessInstanceStartAppService processInstanceStartApplication;
 
     @Resource
     private ApplicationInfoHolder applicationInfoHolder;
