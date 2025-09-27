@@ -11,7 +11,7 @@ import org.mapstruct.MappingTarget;
 interface CommentMapper {
 
     @Mapping(target = "taskId", source = "id")
-    @Mapping(target = "nodeId", source = "taskDefinitionId")
+    @Mapping(target = "nodeId", source = "task.taskDefinitionKey")
     Comment updateFromTask(@MappingTarget Comment comment, Task task);
 
     @Mapping(target = "taskId", constant = "")

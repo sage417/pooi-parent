@@ -5,6 +5,7 @@ import app.pooi.workflow.domain.service.comment.CommentService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.flowable.engine.TaskService;
 import org.flowable.task.api.Task;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,14 +47,17 @@ public class UserTaskAddSignAppService {
     }
 
     private Task createSubTask(Task parentTask, String assignee) {
-        return taskService.createTaskBuilder()
-                .parentTaskId(parentTask.getId())
-                .name(parentTask.getName())
-                .taskDefinitionKey(parentTask.getTaskDefinitionKey())
-                .taskDefinitionId(parentTask.getTaskDefinitionId())
-                .tenantId(parentTask.getTenantId())
-                .assignee(assignee)
-                .create();
+        TaskEntity taskEntity = (TaskEntity) taskService.newTask();
 
+        taskEntity.setParentTaskId(parentTask.getId());
+        taskEntity.setName(parentTask.getName());
+        taskEntity.setTaskDefinitionKey(parentTask.getTaskDefinitionKey());
+        taskEntity.setTaskDefinitionId(parentTask.getTaskDefinitionId());
+        taskEntity.setTenantId(parentTask.getTenantId());
+        taskEntity.setAssignee(assignee);
+        taskEntity.setProcessInstanceId(parentTask.getProcessInstanceId());
+        taskEntity.setProcessDefinitionId(parentTask.getProcessDefinitionId());
+
+        return taskEntity;
     }
 }
