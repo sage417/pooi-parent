@@ -8,8 +8,10 @@
 
 package app.pooi.workflow.infrastructure.configuration.flowable.behavior;
 
-import app.pooi.workflow.application.service.TaskAgencyAppService;
+import app.pooi.workflow.application.service.UserTaskAgencyAppService;
 import app.pooi.workflow.domain.model.workflow.agency.TaskDelegateResult;
+import app.pooi.workflow.domain.model.workflow.comment.Comment;
+import app.pooi.workflow.domain.service.comment.CommentService;
 import app.pooi.workflow.infrastructure.configuration.flowable.props.FlowableCustomProperties;
 import app.pooi.workflow.util.BpmnModelUtil;
 import app.pooi.workflow.util.TaskEntityUtil;
@@ -61,14 +63,19 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
     private final FlowableCustomProperties flowableCustomProperties;
 
-    private final TaskAgencyAppService taskAgencyApplication;
+    private final UserTaskAgencyAppService taskAgencyApplication;
+
+    private final CommentService commentService;
 
     public CustomUserTaskActivityBehavior(UserTask userTask,
-                                          TaskAgencyAppService taskAgencyAppService,
-                                          FlowableCustomProperties flowableCustomProperties) {
+                                          FlowableCustomProperties flowableCustomProperties,
+                                          UserTaskAgencyAppService taskAgencyAppService,
+                                          CommentService commentService
+    ) {
         super(userTask);
-        this.taskAgencyApplication = taskAgencyAppService;
         this.flowableCustomProperties = flowableCustomProperties;
+        this.taskAgencyApplication = taskAgencyAppService;
+        this.commentService = commentService;
     }
 
     @Override
@@ -191,6 +198,8 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
             if (satisfyAutoCompleteCond(task, (ExecutionEntity) execution, commandContext)) {
                 TaskHelper.completeTask(task, null, null, null, null, commandContext);
+                Comment autoCompleteComment = this.commentService.createFromTask(task, "AUTO_COMPLETE");
+                this.commentService.cacheComment(autoCompleteComment);
             }
 
 

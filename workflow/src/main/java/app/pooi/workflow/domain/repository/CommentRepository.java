@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface CommentRepository {
 
-    boolean save(Comment entity);
+    boolean save(Comment entity, boolean flushCache);
 
     List<Comment> listByInstanceId(String processInstanceId);
 }

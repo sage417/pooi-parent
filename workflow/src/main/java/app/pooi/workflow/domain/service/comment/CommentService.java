@@ -29,7 +29,11 @@ public class CommentService {
     }
 
     public boolean recordComment(Comment comment) {
-        return commentRepository.save(comment);
+        return commentRepository.save(comment, true);
+    }
+
+    public boolean cacheComment(Comment comment) {
+        return commentRepository.save(comment, false);
     }
 
     public List<Comment> listByInstanceId(String processInstanceId) {
