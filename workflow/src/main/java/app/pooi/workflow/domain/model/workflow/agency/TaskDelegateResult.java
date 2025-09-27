@@ -9,9 +9,9 @@ import lombok.experimental.Accessors;
 @Setter
 public class TaskDelegateResult {
 
-    public static TaskDelegateResult NO_NEED_CHANGE_ASSIGNEE_RESULT = new TaskDelegateResult().setNeedDoDelegate(false);
+    public static TaskDelegateResult NO_NEED_CHANGE_ASSIGNEE_RESULT = new TaskDelegateResult().setMatchDelegateProfile(false);
 
-    private boolean needDoDelegate;
+    private boolean matchDelegateProfile;
 
     private TaskApprovalNode assigneeAfterDelegate;
 

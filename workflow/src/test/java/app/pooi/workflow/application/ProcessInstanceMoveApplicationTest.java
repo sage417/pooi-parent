@@ -1,7 +1,7 @@
 package app.pooi.workflow.application;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
-import app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport;
+import app.pooi.workflow.domain.service.comment.CommentService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.flowable.engine.RuntimeService;
@@ -33,7 +33,7 @@ class ProcessInstanceMoveApplicationTest {
     private TaskService taskService;
 
     @Resource
-    private CommentSupport commentSupport;
+    private CommentService commentService;
 
     @Resource
     private ProcessInstanceMoveApplication processInstanceMoveApplication;

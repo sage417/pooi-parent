@@ -1,4 +1,4 @@
-package app.pooi.workflow.application;
+package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.domain.model.enums.TaskAgencyType;
 import app.pooi.workflow.domain.model.workflow.agency.*;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class TaskAgencyApplication {
+public class TaskAgencyAppService {
 
     @Resource
     private TaskAgencyProfileRepository taskAgencyProfileRepository;
@@ -44,7 +44,7 @@ public class TaskAgencyApplication {
         Set<String> assigneeAfterDelegate = taskApprovalRelationAfterDelegate.getChildren().stream()
                 .map(TravelNode::getValue).collect(Collectors.toSet());
 
-        return new TaskDelegateResult().setNeedDoDelegate(Sets.difference(taskAssignees, assigneeAfterDelegate).isEmpty())
+        return new TaskDelegateResult().setMatchDelegateProfile(Sets.difference(taskAssignees, assigneeAfterDelegate).isEmpty())
                 .setAssigneeAfterDelegate(taskApprovalRelationAfterDelegate);
     }
 

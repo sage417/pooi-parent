@@ -73,7 +73,7 @@ class ArticleWorkflowIntegrationDelegateTest {
                 .count());
         TimeUnit.SECONDS.sleep(5);
         // wait
-        assertEquals(15, eventRecordRepository.count(Wrappers.lambdaQuery(EventRecordEntity.class)
+        assertEquals(16, eventRecordRepository.count(Wrappers.lambdaQuery(EventRecordEntity.class)
                 .eq(EventRecordEntity::getProcessInstanceId, task.getProcessInstanceId())), "");
     }
 }

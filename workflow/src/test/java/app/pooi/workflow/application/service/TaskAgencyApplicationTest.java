@@ -1,4 +1,4 @@
-package app.pooi.workflow.application;
+package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.domain.model.workflow.agency.TaskApprovalNode;
 import app.pooi.workflow.domain.model.workflow.agency.TaskDelegateNode;
@@ -29,8 +29,8 @@ class TaskAgencyApplicationTest {
         taskDelegateNode.addChild(delegateNodeC);
 
 
-        TaskAgencyApplication taskAgencyApplication = new TaskAgencyApplication();
-        TaskApprovalNode approvalNode = taskAgencyApplication.calculateApprovalDelegateRelation(taskApprovalNode, taskDelegateNode);
+        TaskAgencyAppService taskAgencyAppService = new TaskAgencyAppService();
+        TaskApprovalNode approvalNode = taskAgencyAppService.calculateApprovalDelegateRelation(taskApprovalNode, taskDelegateNode);
         // D E F
         Assertions.assertThat(approvalNode.getChildren()).hasSize(3);
         Assertions.assertThat(approvalNode.getChildren().stream().map(TravelNode::getValue).toList())

@@ -1,7 +1,7 @@
 package app.pooi.workflow.application;
 
-import app.pooi.workflow.applicationsupport.workflowcomment.AddCommentBO;
-import app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport;
+import app.pooi.workflow.domain.model.workflow.comment.Comment;
+import app.pooi.workflow.domain.service.comment.CommentService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -26,7 +26,7 @@ public class UserTaskOperationApplication {
     private TaskService taskService;
 
     @Resource
-    private CommentSupport commentSupport;
+    private CommentService commentService;
 
     @Transactional(rollbackFor = Exception.class)
     public void addCirculate(String taskId, Set<String> userIds) {
@@ -50,9 +50,8 @@ public class UserTaskOperationApplication {
 
         processParentTask(task.getParentTaskId(), variables);
         // record comment
-        AddCommentBO addCommentBO = commentSupport.createFromTask(task);
-        addCommentBO.setType("COMPLETE_TASK");
-        commentSupport.recordComment(addCommentBO);
+        Comment addCommentBO = commentService.createFromTask(task, "COMPLETE_TASK");
+        commentService.recordComment(addCommentBO);
     }
 
     private void processParentTask(String parentTaskId, Map<String, Object> variables) {

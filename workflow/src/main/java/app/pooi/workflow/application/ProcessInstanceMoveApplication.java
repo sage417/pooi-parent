@@ -1,11 +1,13 @@
 package app.pooi.workflow.application;
 
-import app.pooi.workflow.applicationsupport.workflowcomment.AddCommentBO;
-import app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport;
+import app.pooi.workflow.domain.model.workflow.comment.Comment;
+import app.pooi.workflow.domain.service.comment.CommentService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
 import org.flowable.engine.runtime.Execution;
+import org.flowable.task.api.Task;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -21,7 +23,10 @@ public class ProcessInstanceMoveApplication {
     private RuntimeService runtimeService;
 
     @Resource
-    private CommentSupport commentSupport;
+    private CommentService commentService;
+
+    @Resource
+    private TaskService taskService;
 
 
     public void rollback(String processInstanceId, String sourceActivityId, String targetActivityId) {
@@ -45,10 +50,18 @@ public class ProcessInstanceMoveApplication {
                 .moveExecutionsToSingleActivityId(executionIds, targetActivityId)
                 .changeState();
 
-        AddCommentBO addCommentBO = commentSupport.createFormExecution(optSourceExecution.get());
-        addCommentBO.setType("ROLLBACK");
-        commentSupport.recordComment(addCommentBO);
+        Comment comment = createComment(optSourceExecution.get());
+        comment.setType("ROLLBACK");
+        commentService.recordComment(comment);
 
+    }
+
+    private Comment createComment(Execution execution) {
+        Task task = taskService.createTaskQuery().executionId(execution.getId()).singleResult();
+        if (task != null) {
+            return commentService.createFromTask(task, "ROLLBACK");
+        }
+        return commentService.createFormExecution(execution);
     }
 
 }

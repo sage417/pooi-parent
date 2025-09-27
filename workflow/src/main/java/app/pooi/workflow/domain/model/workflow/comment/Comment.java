@@ -1,10 +1,12 @@
 package app.pooi.workflow.domain.model.workflow.comment;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
 public class Comment {
 
     private String tenantId;
@@ -26,4 +28,8 @@ public class Comment {
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
+
+    public Comment(String type) {
+        this.type = type;
+    }
 }

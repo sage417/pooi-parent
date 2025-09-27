@@ -1,7 +1,7 @@
 package app.pooi.workflow.application;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
-import app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport;
+import app.pooi.workflow.domain.service.comment.CommentService;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +42,7 @@ class UserTaskOperationApplicationTest {
     private UserTaskAddSignApplication userTaskAddSignApplication;
 
     @Resource
-    private CommentSupport commentSupport;
+    private CommentService commentService;
 
     @Test
     @SneakyThrows
@@ -85,7 +85,7 @@ class UserTaskOperationApplicationTest {
         assertEquals(2, taskService.createTaskQuery().count());
         assertEquals(0, taskService.createTaskQuery().taskAssignee("target").count());
         assertEquals(1, taskService.createTaskQuery().taskAssignee("userId1").count());
-        assertEquals(1, commentSupport.listByInstanceId(task.getProcessInstanceId()).size());
+        assertEquals(1, commentService.listByInstanceId(task.getProcessInstanceId()).size());
 
         Task task1 = taskService.createTaskQuery().excludeSubtasks().singleResult();
         assertEquals(task1.getDelegationState(), DelegationState.PENDING);

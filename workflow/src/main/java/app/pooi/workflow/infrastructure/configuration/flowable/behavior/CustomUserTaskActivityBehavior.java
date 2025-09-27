@@ -8,9 +8,8 @@
 
 package app.pooi.workflow.infrastructure.configuration.flowable.behavior;
 
-import app.pooi.workflow.application.TaskAgencyApplication;
+import app.pooi.workflow.application.service.TaskAgencyAppService;
 import app.pooi.workflow.domain.model.workflow.agency.TaskDelegateResult;
-import app.pooi.workflow.domain.repository.TaskAgencyProfileRepository;
 import app.pooi.workflow.infrastructure.configuration.flowable.props.FlowableCustomProperties;
 import app.pooi.workflow.util.BpmnModelUtil;
 import app.pooi.workflow.util.TaskEntityUtil;
@@ -62,14 +61,13 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
     private final FlowableCustomProperties flowableCustomProperties;
 
-    private final TaskAgencyApplication taskAgencyApplication;
+    private final TaskAgencyAppService taskAgencyApplication;
 
     public CustomUserTaskActivityBehavior(UserTask userTask,
-                                          TaskAgencyProfileRepository taskAgencyProfileRepository,
-                                          TaskAgencyApplication taskAgencyApplication,
+                                          TaskAgencyAppService taskAgencyAppService,
                                           FlowableCustomProperties flowableCustomProperties) {
         super(userTask);
-        this.taskAgencyApplication = taskAgencyApplication;
+        this.taskAgencyApplication = taskAgencyAppService;
         this.flowableCustomProperties = flowableCustomProperties;
     }
 
@@ -204,12 +202,12 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
     private void taskAgencyAfterHandleAssignments(ExecutionEntity execution, TaskEntity task, ProcessEngineConfigurationImpl processEngineConfiguration) {
 
-        TaskDelegateResult approvalDelegateResult;
+        TaskDelegateResult delegateResult;
         if (BooleanUtils.isTrue(flowableCustomProperties.getApprovalDelegateEnable())
-                && (approvalDelegateResult = taskAgencyApplication.matchTaskDelegate(execution,
-                TaskEntityUtil.getAssigneeAndCandidates(task), task.getTenantId())).isNeedDoDelegate()) {
+                && (delegateResult = taskAgencyApplication.matchTaskDelegate(execution,
+                TaskEntityUtil.getAssigneeAndCandidates(task), task.getTenantId())).isMatchDelegateProfile()) {
 
-            Set<String> assigneeAfterDelegate = approvalDelegateResult.getAssigneeAfterDelegate().getChildren().stream()
+            Set<String> assigneeAfterDelegate = delegateResult.getAssigneeAfterDelegate().getChildren().stream()
                     .map(TravelNode::getValue).collect(Collectors.toSet());
 
             // update task assignee

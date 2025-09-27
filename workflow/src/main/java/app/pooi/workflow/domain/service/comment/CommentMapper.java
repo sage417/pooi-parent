@@ -1,4 +1,4 @@
-package app.pooi.workflow.applicationsupport.workflowcomment;
+package app.pooi.workflow.domain.service.comment;
 
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
 import org.flowable.engine.runtime.Execution;
@@ -8,16 +8,13 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
-public interface CommentConvert {
-
-
-    Comment convert2DO(AddCommentBO bo);
+interface CommentMapper {
 
     @Mapping(target = "taskId", source = "id")
     @Mapping(target = "nodeId", source = "taskDefinitionId")
-    AddCommentBO updateFromTask(@MappingTarget AddCommentBO bo, Task task);
+    Comment updateFromTask(@MappingTarget Comment comment, Task task);
 
     @Mapping(target = "taskId", constant = "")
     @Mapping(target = "nodeId", source = "activityId")
-    AddCommentBO convert2DO(Execution execution);
+    Comment convert2DO(Execution execution);
 }

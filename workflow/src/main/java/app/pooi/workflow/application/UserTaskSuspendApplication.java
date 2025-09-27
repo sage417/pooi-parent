@@ -1,7 +1,7 @@
 package app.pooi.workflow.application;
 
-import app.pooi.workflow.applicationsupport.workflowcomment.AddCommentBO;
-import app.pooi.workflow.applicationsupport.workflowcomment.CommentSupport;
+import app.pooi.workflow.domain.model.workflow.comment.Comment;
+import app.pooi.workflow.domain.service.comment.CommentService;
 import org.flowable.common.engine.impl.db.SuspensionState;
 import org.flowable.common.engine.impl.interceptor.Command;
 import org.flowable.engine.ManagementService;
@@ -21,7 +21,7 @@ public class UserTaskSuspendApplication {
     private TaskService taskService;
 
     @Resource
-    private CommentSupport commentSupport;
+    private CommentService commentService;
 
     @Resource
     private ManagementService managementService;
@@ -40,9 +40,8 @@ public class UserTaskSuspendApplication {
             return null;
         });
 
-        AddCommentBO addCommentBO = commentSupport.createFromTask(task);
-        addCommentBO.setType("SUSPEND");
-        commentSupport.recordComment(addCommentBO);
+        Comment addCommentBO = commentService.createFromTask(task, "SUSPEND");
+        commentService.recordComment(addCommentBO);
     }
 
     public void active(String taskId) {
@@ -58,9 +57,8 @@ public class UserTaskSuspendApplication {
             return null;
         });
 
-        AddCommentBO addCommentBO = commentSupport.createFromTask(task);
-        addCommentBO.setType("ACTIVE");
-        commentSupport.recordComment(addCommentBO);
+        Comment addCommentBO = commentService.createFromTask(task, "ACTIVE");
+        commentService.recordComment(addCommentBO);
 
     }
 
