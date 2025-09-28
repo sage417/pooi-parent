@@ -2,15 +2,15 @@
 - [x] shardingsphere接入
 - [x] 动态加签 app.pooi.workflow.application.service.UserTaskAddSignAppService.addSignTask
 - [x] 分布式缓存 app.pooi.workflow.infrastructure.configuration.flowable.engine.ProcessDefinitionDeploymentCache
-- [ ] 分享/传阅 app.pooi.workflow.application.service.UserTaskOperationAppService.addCirculate
-- [ ] 审批历史 app.pooi.workflow.domain.service.comment.CommentService
+- [x] 分享/传阅 app.pooi.workflow.application.service.UserTaskOperationAppService.addCirculate
+- [x] 审批历史 app.pooi.workflow.domain.service.comment.CommentService
 - [x] 任务回退/跳转 app.pooi.workflow.application.service.ProcessInstanceMoveAppService.rollback
 - [x] 任务挂起 app.pooi.workflow.application.service.UserTaskSuspendAppService
 - [ ] 审批全权代理/共享 app.pooi.workflow.application.service.UserTaskAgencyAppService
 - [ ] 任务条件自动审批
 - [ ] 审批人异常处理
 - [ ] 任务超时处理
-- [ ] 办理人员规则/审批人对接人员/组织关系
+- [ ] 办理人员规则/审批人对接人员/组织关系 app.pooi.workflow.application.service.OrgQueryAppService
 - [ ] 流程流转显示
 - [ ] ~~标题自动计算~~
 - [ ] 多语言
