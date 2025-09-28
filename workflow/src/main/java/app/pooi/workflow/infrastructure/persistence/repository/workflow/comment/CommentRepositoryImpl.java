@@ -40,26 +40,7 @@ class CommentRepositoryImpl implements CommentRepository {
         } else {
             // cache first time
             if (deque.isEmpty()) {
-                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                    @Override
-                    public void beforeCommit(boolean readOnly) {
-                        Deque<CommentEntity> deque = TRANSACTIONAL_COMMENT_ENTITY_HOLDER.get();
-                        try {
-                            if (!readOnly && !deque.isEmpty()) {
-                                // FALL BACK didnt flush before commit
-                                log.warn("not flush cache before commit");
-                                deque.forEach(commentEntityService::save);
-                            }
-                        } finally {
-                            TRANSACTIONAL_COMMENT_ENTITY_HOLDER.remove();
-                        }
-                    }
-
-                    @Override
-                    public void afterCompletion(int status) {
-                        TRANSACTIONAL_COMMENT_ENTITY_HOLDER.remove();
-                    }
-                });
+                TransactionSynchronizationManager.registerSynchronization(new CommentCacheTransactionSynchronization());
             }
             deque.push(commentEntity);
         }
@@ -70,5 +51,26 @@ class CommentRepositoryImpl implements CommentRepository {
     public List<Comment> listByInstanceId(String processInstanceId) {
         List<CommentEntity> commentEntities = commentEntityService.listByInstanceId(processInstanceId);
         return commentEntities.stream().map(converter::toModel).collect(Collectors.toList());
+    }
+
+    private class CommentCacheTransactionSynchronization implements TransactionSynchronization {
+        @Override
+        public void beforeCommit(boolean readOnly) {
+
+            Deque<CommentEntity> deque = TRANSACTIONAL_COMMENT_ENTITY_HOLDER.get();
+            try {
+                if (!readOnly && !deque.isEmpty()) {
+                    // FALL BACK didnt flush before commit
+                    deque.forEach(commentEntityService::save);
+                }
+            } finally {
+                TRANSACTIONAL_COMMENT_ENTITY_HOLDER.remove();
+            }
+        }
+
+        @Override
+        public void afterCompletion(int status) {
+            TRANSACTIONAL_COMMENT_ENTITY_HOLDER.remove();
+        }
     }
 }

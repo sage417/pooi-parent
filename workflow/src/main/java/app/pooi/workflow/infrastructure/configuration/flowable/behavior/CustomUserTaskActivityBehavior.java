@@ -13,7 +13,6 @@ import app.pooi.workflow.domain.model.workflow.agency.TaskDelegateResult;
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
 import app.pooi.workflow.domain.service.comment.CommentService;
 import app.pooi.workflow.infrastructure.configuration.flowable.props.FlowableCustomProperties;
-import app.pooi.workflow.util.BpmnModelUtil;
 import app.pooi.workflow.util.TaskEntityUtil;
 import app.pooi.workflow.util.TravelNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -21,7 +20,6 @@ import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.FlowNode;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
@@ -56,6 +54,7 @@ import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -164,6 +163,7 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
             handleAssignments(taskService, beforeContext.getAssignee(), beforeContext.getOwner(), beforeContext.getCandidateUsers(),
                     beforeContext.getCandidateGroups(), task, expressionManager, execution, processEngineConfiguration);
+
             // ---------- task agency ---------- //
             taskAgencyAfterHandleAssignments((ExecutionEntity) execution, task, processEngineConfiguration);
             // ---------- task agency ---------- //
@@ -195,13 +195,13 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
                 }
             }
 
-
+            // ---------- auto complete ---------- //
             if (satisfyAutoCompleteCond(task, (ExecutionEntity) execution, commandContext)) {
                 TaskHelper.completeTask(task, null, null, null, null, commandContext);
                 Comment autoCompleteComment = this.commentService.createFromTask(task, "AUTO_COMPLETE");
                 this.commentService.cacheComment(autoCompleteComment);
             }
-
+            // ---------- auto complete ---------- //
 
         } else {
             TaskHelper.deleteTask(task, null, false, false, false); // false: no events fired for skipped user task
@@ -261,15 +261,43 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
 
     protected boolean satisfyAutoCompleteCond(TaskEntity task, ExecutionEntity execution, CommandContext commandContext) {
+
+        String processDefinitionKey = execution.getProcessDefinitionKey();
+        String taskDefinitionKey = task.getTaskDefinitionKey();
+
+        log.info("satisfyAutoCompleteCond {} {}", processDefinitionKey, taskDefinitionKey);
+
         // 自动审批的情况
         // 之前审批过 (不包含加签)
         // 前一个人工任务审批过
 //        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
-        UserTask preFlowElement = BpmnModelUtil.findPreFlowElement(commandContext, ((FlowNode) execution.getCurrentFlowElement()), UserTask.class);
+//        UserTask preFlowElement = BpmnModelUtil.findPreFlowElement(commandContext, ((FlowNode) execution.getCurrentFlowElement()), UserTask.class);
+//        if (preFlowElement != null) {
+//            log.info("preFlowElement name {}", preFlowElement.getName());
+//        }
 
-//        List<CommentDO> commentDOS = commentRepository.listByInstanceId(execution.getProcessInstanceId());
+        String startUserId = searchExecutionProperties(execution, ExecutionEntity::getStartUserId);
 
+        if (TaskEntityUtil.getCandidates(task).isEmpty() && StringUtils.equals(task.getAssignee(), startUserId)) {
+            return true;
+        }
 
         return false;
+    }
+
+    private static String searchExecutionProperties(ExecutionEntity execution, Function<ExecutionEntity, String> propertyFun) {
+
+        ExecutionEntity currentExecution = execution;
+        String propertyValue = propertyFun.apply(currentExecution);
+
+        while (propertyValue == null) {
+            currentExecution = currentExecution.getParent();
+            if (currentExecution != null) {
+                propertyValue = propertyFun.apply(currentExecution);
+            } else {
+                break;
+            }
+        }
+        return propertyValue;
     }
 }
