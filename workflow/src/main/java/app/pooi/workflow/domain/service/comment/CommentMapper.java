@@ -1,7 +1,7 @@
 package app.pooi.workflow.domain.service.comment;
 
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
-import org.flowable.engine.runtime.Execution;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.task.api.Task;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -16,5 +16,5 @@ interface CommentMapper {
 
     @Mapping(target = "taskId", constant = "")
     @Mapping(target = "nodeId", source = "activityId")
-    Comment convert2DO(Execution execution);
+    Comment convertFromExecution(ExecutionEntity execution);
 }

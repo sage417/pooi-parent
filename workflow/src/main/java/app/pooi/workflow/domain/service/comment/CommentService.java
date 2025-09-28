@@ -2,7 +2,7 @@ package app.pooi.workflow.domain.service.comment;
 
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
 import app.pooi.workflow.domain.repository.CommentRepository;
-import org.flowable.engine.runtime.Execution;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.task.api.Task;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +24,8 @@ public class CommentService {
         return comment;
     }
 
-    public Comment createFormExecution(Execution execution) {
-        return commentConvert.convert2DO(execution);
+    public Comment createFormExecution(ExecutionEntity execution) {
+        return commentConvert.convertFromExecution(execution);
     }
 
     public boolean recordComment(Comment comment) {
