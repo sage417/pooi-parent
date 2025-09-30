@@ -9,6 +9,7 @@
 package app.pooi.workflow.infrastructure.configuration.flowable.behavior;
 
 import app.pooi.workflow.application.service.UserTaskAgencyAppService;
+import app.pooi.workflow.application.service.UserTaskAutoCompleteAppService;
 import app.pooi.workflow.domain.service.comment.CommentService;
 import app.pooi.workflow.infrastructure.configuration.flowable.props.FlowableCustomProperties;
 import org.flowable.bpmn.model.UserTask;
@@ -26,10 +27,14 @@ public class CustomActivityBehaviorFactory extends DefaultActivityBehaviorFactor
     private UserTaskAgencyAppService agencyAppService;
 
     @Resource
+    private UserTaskAutoCompleteAppService userTaskAutoCompleteAppService;
+
+    @Resource
     private CommentService commentService;
+
 
     @Override
     public UserTaskActivityBehavior createUserTaskActivityBehavior(UserTask userTask) {
-        return new CustomUserTaskActivityBehavior(userTask, flowableCustomProperties, agencyAppService, commentService);
+        return new CustomUserTaskActivityBehavior(userTask, flowableCustomProperties, agencyAppService, userTaskAutoCompleteAppService, commentService);
     }
 }

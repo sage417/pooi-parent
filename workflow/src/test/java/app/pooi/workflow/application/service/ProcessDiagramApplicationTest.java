@@ -1,8 +1,7 @@
-package app.pooi.workflow.application;
+package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
 import app.pooi.workflow.application.entity.FlowElementEntity;
-import app.pooi.workflow.application.service.ProcessDiagramAppService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;

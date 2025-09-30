@@ -9,6 +9,8 @@
 package app.pooi.workflow.infrastructure.configuration.flowable.behavior;
 
 import app.pooi.workflow.application.service.UserTaskAgencyAppService;
+import app.pooi.workflow.application.service.UserTaskAutoCompleteAppService;
+import app.pooi.workflow.application.service.enums.TaskAutoCompleteType;
 import app.pooi.workflow.domain.model.workflow.agency.TaskDelegateResult;
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
 import app.pooi.workflow.domain.service.comment.CommentService;
@@ -54,7 +56,6 @@ import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -66,14 +67,17 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
     private final CommentService commentService;
 
+    private final UserTaskAutoCompleteAppService userTaskAutoCompleteAppService;
+
     public CustomUserTaskActivityBehavior(UserTask userTask,
                                           FlowableCustomProperties flowableCustomProperties,
                                           UserTaskAgencyAppService taskAgencyAppService,
-                                          CommentService commentService
+                                          UserTaskAutoCompleteAppService userTaskAutoCompleteAppService, CommentService commentService
     ) {
         super(userTask);
         this.flowableCustomProperties = flowableCustomProperties;
         this.taskAgencyApplication = taskAgencyAppService;
+        this.userTaskAutoCompleteAppService = userTaskAutoCompleteAppService;
         this.commentService = commentService;
     }
 
@@ -196,9 +200,11 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
             }
 
             // ---------- auto complete ---------- //
-            if (satisfyAutoCompleteCond(task, (ExecutionEntity) execution, commandContext)) {
+            TaskAutoCompleteType autoCompleteType = userTaskAutoCompleteAppService.satisfyAutoCompleteCond(task, (ExecutionEntity) execution, commandContext);
+            if (!TaskAutoCompleteType.NO_AUTO_APPROVAL_NEEDED.equals(autoCompleteType)) {
                 TaskHelper.completeTask(task, null, null, null, null, commandContext);
                 Comment autoCompleteComment = this.commentService.createFromTask(task, "AUTO_COMPLETE");
+//                autoCompleteComment.setOperationDetail(autoCompleteType.name());
                 this.commentService.cacheComment(autoCompleteComment);
             }
             // ---------- auto complete ---------- //
@@ -257,47 +263,5 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
                 // to something when assignee is empty here
             }
         }
-    }
-
-
-    protected boolean satisfyAutoCompleteCond(TaskEntity task, ExecutionEntity execution, CommandContext commandContext) {
-
-        String processDefinitionKey = execution.getProcessDefinitionKey();
-        String taskDefinitionKey = task.getTaskDefinitionKey();
-
-        log.info("satisfyAutoCompleteCond {} {}", processDefinitionKey, taskDefinitionKey);
-
-        // 自动审批的情况
-        // 之前审批过 (不包含加签)
-        // 前一个人工任务审批过
-//        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
-//        UserTask preFlowElement = BpmnModelUtil.findPreFlowElement(commandContext, ((FlowNode) execution.getCurrentFlowElement()), UserTask.class);
-//        if (preFlowElement != null) {
-//            log.info("preFlowElement name {}", preFlowElement.getName());
-//        }
-
-        String startUserId = searchExecutionProperties(execution, ExecutionEntity::getStartUserId);
-
-        if (TaskEntityUtil.getCandidates(task).isEmpty() && StringUtils.equals(task.getAssignee(), startUserId)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    private static String searchExecutionProperties(ExecutionEntity execution, Function<ExecutionEntity, String> propertyFun) {
-
-        ExecutionEntity currentExecution = execution;
-        String propertyValue = propertyFun.apply(currentExecution);
-
-        while (propertyValue == null) {
-            currentExecution = currentExecution.getParent();
-            if (currentExecution != null) {
-                propertyValue = propertyFun.apply(currentExecution);
-            } else {
-                break;
-            }
-        }
-        return propertyValue;
     }
 }

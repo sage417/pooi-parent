@@ -243,19 +243,19 @@ public class BpmnModelUtil {
                 .collect(Collectors.toMap(ActivityInstance::getActivityId, Function.identity(), CollectorsUtil.useFirst()));
 
         Set<SequenceFlow> incomingElements = currentFlowNode.getIncomingFlows().stream()
-                .filter(seq -> sequenceFlowMap.containsKey(seq.getId()))
+                .filter(seq -> sequenceFlowMap.containsKey("_flow_" + seq.getSourceRef() + "__" + seq.getTargetRef()))
                 .collect(Collectors.toSet());
 
         if (incomingElements.size() != 1) {
             return null;
         }
         SequenceFlow sequenceFlow = incomingElements.iterator().next();
-        if (!(sequenceFlow.getTargetFlowElement() instanceof FlowNode)) {
+        if (!(sequenceFlow.getSourceFlowElement() instanceof FlowNode)) {
             return null;
         }
-        if (elementType.equals(sequenceFlow.getTargetFlowElement().getClass())) {
-            return (T) sequenceFlow.getTargetFlowElement();
+        if (elementType.equals(sequenceFlow.getSourceFlowElement().getClass())) {
+            return (T) sequenceFlow.getSourceFlowElement();
         }
-        return findPreFlowElement(commandContext, ((FlowNode) sequenceFlow.getTargetFlowElement()), elementType);
+        return findPreFlowElement(commandContext, ((FlowNode) sequenceFlow.getSourceFlowElement()), elementType);
     }
 }

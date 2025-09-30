@@ -1,7 +1,6 @@
-package app.pooi.workflow.application;
+package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
-import app.pooi.workflow.application.service.ProcessInstanceMoveAppService;
 import app.pooi.workflow.domain.service.comment.CommentService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
