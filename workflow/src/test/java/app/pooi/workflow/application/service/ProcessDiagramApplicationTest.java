@@ -1,7 +1,7 @@
 package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
-import app.pooi.workflow.application.entity.FlowElementEntity;
+import app.pooi.workflow.domain.model.workflow.diagram.ProcessDiagramElement;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -29,7 +29,7 @@ class ProcessDiagramApplicationTest {
     @SneakyThrows
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
     void bfs() {
-        List<FlowElementEntity> flowElementEntities = processDiagramApplication.bfs("articleReview", null);
+        List<ProcessDiagramElement> flowElementEntities = processDiagramApplication.bfs("articleReview", null);
         Assertions.assertThat(flowElementEntities).hasSize(12);
     }
 
@@ -37,7 +37,7 @@ class ProcessDiagramApplicationTest {
     @SneakyThrows
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
     void dfs() {
-        List<FlowElementEntity> flowElementEntities = processDiagramApplication.dfs("articleReview", null);
+        List<ProcessDiagramElement> flowElementEntities = processDiagramApplication.dfs("articleReview", null);
         Assertions.assertThat(flowElementEntities).hasSize(12);
     }
 
@@ -45,7 +45,7 @@ class ProcessDiagramApplicationTest {
     @SneakyThrows
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
     void travel() {
-        List<FlowElementEntity> flowElementEntities = processDiagramApplication.travel("articleReview", null);
+        List<ProcessDiagramElement> flowElementEntities = processDiagramApplication.travel("articleReview", null);
         Assertions.assertThat(flowElementEntities).hasSize(12);
     }
 }
