@@ -150,8 +150,6 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
         handlePriority(beforeContext, expressionManager, task, execution, activeTaskPriority);
         handleCategory(beforeContext, expressionManager, task, execution);
         handleFormKey(beforeContext, expressionManager, task, execution);
-        // maybe pre handle assignments here to do something
-        preHandleAssignments(beforeContext, expressionManager, null, execution);
 
         boolean skipUserTask = SkipExpressionUtil.isSkipExpressionEnabled(beforeContext.getSkipExpression(), userTask.getId(), execution, commandContext)
                 && SkipExpressionUtil.shouldSkipFlowElement(beforeContext.getSkipExpression(), userTask.getId(), execution, commandContext);
@@ -208,7 +206,6 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
                 this.commentService.cacheComment(autoCompleteComment);
             }
             // ---------- auto complete ---------- //
-
         } else {
             TaskHelper.deleteTask(task, null, false, false, false); // false: no events fired for skipped user task
             leave(execution);
@@ -246,21 +243,6 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
             if (identityLinkEntities != null && !identityLinkEntities.isEmpty()) {
                 IdentityLinkUtil.handleTaskIdentityLinkAdditions(task, identityLinkEntities);
-            }
-        }
-    }
-
-
-    protected void preHandleAssignments(CreateUserTaskBeforeContext beforeContext, ExpressionManager expressionManager, TaskEntity task, DelegateExecution execution) {
-        if (StringUtils.isNotEmpty(beforeContext.getAssignee())) {
-            Object assigneeExpressionValue = expressionManager.createExpression(beforeContext.getAssignee()).getValue(execution);
-            String assigneeValue = null;
-            if (assigneeExpressionValue != null) {
-                assigneeValue = assigneeExpressionValue.toString();
-            }
-
-            if (StringUtils.isEmpty(assigneeValue)) {
-                // to something when assignee is empty here
             }
         }
     }

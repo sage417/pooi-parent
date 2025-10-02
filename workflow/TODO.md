@@ -7,14 +7,15 @@
 - [x] 任务回退/跳转 app.pooi.workflow.application.service.ProcessInstanceMoveAppService.rollback
 - [x] 任务挂起 app.pooi.workflow.application.service.UserTaskSuspendAppService
 - [ ] 审批全权代理/共享 app.pooi.workflow.application.service.UserTaskAgencyAppService
-- [ ] 任务条件自动审批
+- [ ] 任务条件自动审批 app.pooi.workflow.application.service.UserTaskAutoCompleteAppService
 - [ ] 审批人异常处理
+  app.pooi.workflow.infrastructure.configuration.flowable.FlowableCreateUserTaskInterceptor.afterCreateUserTask
 - [ ] 任务超时处理
 - [ ] 办理人员规则/审批人对接人员/组织关系 app.pooi.workflow.application.service.OrgQueryAppService
 - [ ] 流程流转显示
 - [ ] ~~标题自动计算~~
 - [ ] 多语言
-- [ ] 测试
+- [x] 测试
 - [x] 对接iam
 
 ### 代操作/代理/共享/加签 定义
