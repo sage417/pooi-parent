@@ -2,6 +2,7 @@ package app.pooi.workflow.domain.service.comment;
 
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
 import app.pooi.workflow.domain.repository.CommentRepository;
+import lombok.NonNull;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.task.api.Task;
 import org.springframework.stereotype.Component;
@@ -18,25 +19,25 @@ public class CommentService {
     @Resource
     private CommentMapper commentConvert;
 
-    public Comment createFromTask(Task task, String type) {
+    public Comment createFromTask(@NonNull Task task, @NonNull String type) {
         Comment comment = new Comment(type);
         commentConvert.updateFromTask(comment, task);
         return comment;
     }
 
-    public Comment createFormExecution(ExecutionEntity execution) {
+    public Comment createFormExecution(@NonNull ExecutionEntity execution) {
         return commentConvert.convertFromExecution(execution);
     }
 
-    public boolean recordComment(Comment comment) {
+    public boolean recordComment(@NonNull Comment comment) {
         return commentRepository.save(comment, true);
     }
 
-    public boolean cacheComment(Comment comment) {
+    public boolean cacheComment(@NonNull Comment comment) {
         return commentRepository.save(comment, false);
     }
 
-    public List<Comment> listByInstanceId(String processInstanceId) {
+    public List<Comment> listByInstanceId(@NonNull String processInstanceId) {
         return commentRepository.listByInstanceId(processInstanceId);
     }
 }
