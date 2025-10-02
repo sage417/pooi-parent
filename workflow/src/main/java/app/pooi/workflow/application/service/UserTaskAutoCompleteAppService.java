@@ -68,7 +68,8 @@ public class UserTaskAutoCompleteAppService {
                 .findHistoricTasksByProcessInstanceId(execution.getProcessInstanceId());
 
         EntityCache entityCache = CommandContextUtil.getEntityCache(commandContext);
-        List<HistoricTaskInstance> historicTaskInstancesCache = entityCache.findInCache(HistoricTaskInstance.class);
+        List<HistoricTaskInstance> historicTaskInstancesCache = entityCache.findInCache(HistoricTaskInstance.class)
+                .stream().filter(t -> t.getEndTime() != null).toList();
 
         ArrayList<HistoricTaskInstance> taskInstances = Stream.concat(tasksByProcessInstanceId.stream(), historicTaskInstancesCache.stream())
                 .collect(Collectors.collectingAndThen(Collectors.toMap(HistoricTaskInstance::getId, Function.identity(), (dbTask, cachedTask) -> cachedTask),
