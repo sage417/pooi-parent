@@ -26,34 +26,27 @@ public class BpmnModelUtil {
     public static void bfs(@NonNull BpmnModel bpmnModel,
                            @NonNull String startNodeId,
                            @NonNull Consumer<FlowElement> visitor) {
-        var startNode = ((FlowNode) bpmnModel.getFlowElement(startNodeId));
+        var startNode = bpmnModel.getFlowElement(startNodeId);
         if (startNode == null) {
             return;
         }
         ArrayDeque<FlowElement> deque = new ArrayDeque<>();
-        deque.push(startNode);
+        deque.add(startNode);
         Set<FlowElement> visited = new HashSet<>();
 
         while (!deque.isEmpty()) {
-            List<FlowNode> flowNodes = new ArrayList<>();
-            for (FlowElement flowElement : deque) {
-                if (!visited.add(flowElement)) {
-                    continue;
-                }
-                if (flowElement instanceof FlowNode) {
-                    flowNodes.add(((FlowNode) flowElement));
-                }
+            FlowElement flowElement = deque.poll();
+            if (!visited.add(flowElement)) {
+                continue;
             }
-            deque.clear();
-
-            for (FlowNode flowNode : flowNodes) {
-                visitor.accept(flowNode);
+            if (flowElement instanceof FlowNode flowNode) {
+                visitor.accept(flowElement);
 
                 flowNode.getOutgoingFlows().stream()
                         .map(SequenceFlow::getTargetFlowElement)
                         .filter(Objects::nonNull)
                         .distinct()
-                        .forEach(deque::addLast);
+                        .forEach(deque::add);
 
                 flowNode.getOutgoingFlows().forEach(visitor);
             }
@@ -124,35 +117,19 @@ public class BpmnModelUtil {
         return startEvents.getFirst();
     }
 
-    private static int calculateGatewayForkJoin(@NonNull BpmnModel bpmnModel,
-                                                @NonNull LinkedHashSet<FlowNode> gateways) {
-
-        FlowNode lastGateWay = findLastGateWay(bpmnModel, gateways);
-        if (lastGateWay == null) {
-            return 0;
-        }
-
-        ArrayDeque<FlowNode> gatewayDeque = new ArrayDeque<>(gateways);
-        int forkJoinCount = gatewayDeque.pop().getOutgoingFlows().size();
-
-        while (!gatewayDeque.isEmpty()) {
-            FlowNode gateway = gatewayDeque.pop();
-            if (!gateway.equals(lastGateWay)) {
-                forkJoinCount += gateway.getOutgoingFlows().size() - gateway.getIncomingFlows().size();
-            } else {
-                forkJoinCount -= gateway.getIncomingFlows().size();
-            }
-        }
-        if (forkJoinCount > 1) {
-            forkJoinCount += lastGateWay.getOutgoingFlows().size();
-        }
-        return forkJoinCount;
-    }
-
     public static void travel(@NonNull BpmnModel bpmnModel,
                               @NonNull String startNodeId,
                               String stopNodeId,
                               @NonNull Consumer<FlowElement> visitor) {
+
+        travelCond(bpmnModel, startNodeId, stopNodeId, searchReachableSequenceFlows(bpmnModel, startNodeId), visitor);
+    }
+
+    public static void travelCond(@NonNull BpmnModel bpmnModel,
+                                  @NonNull String startNodeId,
+                                  String stopNodeId,
+                                  @NonNull Set<SequenceFlow> reachableSequenceFlows,
+                                  @NonNull Consumer<FlowElement> visitor) {
 
         var startNode = ((FlowNode) bpmnModel.getFlowElement(startNodeId));
         if (startNode == null) {
@@ -164,13 +141,6 @@ public class BpmnModelUtil {
         Set<String> visitedNodeIds = new HashSet<>();
         Set<SequenceFlow> visitedSequences = new HashSet<>();
         LinkedHashSet<FlowNode> gateways = new LinkedHashSet<>();
-        // 检查可以遍历到的元素
-        Set<FlowElement> reachableElements = new HashSet<>();
-        bfs(bpmnModel, startNodeId, reachableElements::add);
-        Set<SequenceFlow> reachableSequenceFlows = reachableElements.stream()
-                .filter(e -> e instanceof SequenceFlow)
-                .map(e -> ((SequenceFlow) e))
-                .collect(Collectors.toSet());
 
         bfsLoop:
         while (!deque.isEmpty()) {
@@ -218,21 +188,27 @@ public class BpmnModelUtil {
                 if (stopSearch && flowNode.getId().equals(stopNodeId)) {
                     break bfsLoop;
                 }
-                flowNode.getOutgoingFlows().stream()
+                List<SequenceFlow> reachableOutgoingFlows = flowNode.getOutgoingFlows().stream()
+                        .filter(reachableSequenceFlows::contains).toList();
+
+                reachableOutgoingFlows.stream()
                         .map(SequenceFlow::getTargetRef)
                         .filter(Objects::nonNull)
                         .distinct()
                         .forEach(deque::addLast);
 
                 visitor.accept(flowNode);
-                flowNode.getOutgoingFlows().forEach(visitor);
+                reachableOutgoingFlows.forEach(visitor);
 
-                visitedSequences.addAll(flowNode.getOutgoingFlows());
+                visitedSequences.addAll(reachableOutgoingFlows);
             }
         }
 
     }
 
+    public static String getSequenceFlowActivityId(@NonNull SequenceFlow sequenceFlow) {
+        return "_flow_" + sequenceFlow.getSourceRef() + "__" + sequenceFlow.getTargetRef();
+    }
 
     public static <T> T findPreFlowElement(CommandContext commandContext, FlowNode currentFlowNode, Class<T> elementType) {
         EntityCache entityCache = CommandContextUtil.getEntityCache(commandContext);
@@ -243,7 +219,7 @@ public class BpmnModelUtil {
                 .collect(Collectors.toMap(ActivityInstance::getActivityId, Function.identity(), CollectorsUtil.useFirst()));
 
         Set<SequenceFlow> incomingElements = currentFlowNode.getIncomingFlows().stream()
-                .filter(seq -> sequenceFlowMap.containsKey("_flow_" + seq.getSourceRef() + "__" + seq.getTargetRef()))
+                .filter(seq -> sequenceFlowMap.containsKey(getSequenceFlowActivityId(seq)))
                 .collect(Collectors.toSet());
 
         if (incomingElements.size() != 1) {
@@ -257,5 +233,39 @@ public class BpmnModelUtil {
             return (T) sequenceFlow.getSourceFlowElement();
         }
         return findPreFlowElement(commandContext, ((FlowNode) sequenceFlow.getSourceFlowElement()), elementType);
+    }
+
+    private static int calculateGatewayForkJoin(@NonNull BpmnModel bpmnModel,
+                                                @NonNull LinkedHashSet<FlowNode> gateways) {
+
+        FlowNode lastGateWay = findLastGateWay(bpmnModel, gateways);
+        if (lastGateWay == null) {
+            return 0;
+        }
+
+        ArrayDeque<FlowNode> gatewayDeque = new ArrayDeque<>(gateways);
+        int forkJoinCount = gatewayDeque.pop().getOutgoingFlows().size();
+
+        while (!gatewayDeque.isEmpty()) {
+            FlowNode gateway = gatewayDeque.pop();
+            if (!gateway.equals(lastGateWay)) {
+                forkJoinCount += gateway.getOutgoingFlows().size() - gateway.getIncomingFlows().size();
+            } else {
+                forkJoinCount -= gateway.getIncomingFlows().size();
+            }
+        }
+        if (forkJoinCount > 1) {
+            forkJoinCount += lastGateWay.getOutgoingFlows().size();
+        }
+        return forkJoinCount;
+    }
+
+    private static Set<SequenceFlow> searchReachableSequenceFlows(@NonNull BpmnModel bpmnModel, @NonNull String startNodeId) {
+        Set<FlowElement> reachableElements = new HashSet<>();
+        dfs(bpmnModel, startNodeId, reachableElements::add);
+        return reachableElements.stream()
+                .filter(e -> e instanceof SequenceFlow)
+                .map(e -> ((SequenceFlow) e))
+                .collect(Collectors.toSet());
     }
 }
