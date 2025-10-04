@@ -11,18 +11,20 @@ public class CommonResult<T> {
 
     private boolean success;
 
-    private int code;
+    private String code;
 
     private String message;
+
+    private String path;
 
     private T data;
 
 
     public static <R> CommonResult<R> success(R data) {
-        return new CommonResult<>(true, 0, "", data);
+        return new CommonResult<>(true, "0", "", null, data);
     }
 
-    public static <R> CommonResult<R> fail(int code, String message, R data) {
-        return new CommonResult<>(false, code, message, data);
+    public static <R> CommonResult<R> fail(String code, String message, String path, R data) {
+        return new CommonResult<>(false, code, message, path, data);
     }
 }
