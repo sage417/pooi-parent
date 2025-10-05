@@ -1,51 +1,74 @@
 package app.pooi.workflow.application.service;
 
+import app.pooi.basic.expection.BusinessException;
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
+import app.pooi.workflow.domain.result.ProcessInstanceStartResult;
+import app.pooi.workflow.domain.service.comment.CommentService;
 import lombok.extern.slf4j.Slf4j;
+import org.flowable.common.engine.impl.identity.Authentication;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.RuntimeService;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.flowable.engine.runtime.ProcessInstance;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
 public class ProcessInstanceStartAppService {
 
     @Resource
-    private RuntimeService runtimeService;
+    private ApplicationInfoHolder applicationInfoHolder;
 
     @Resource
     private RepositoryService repositoryService;
 
     @Resource
-    private ApplicationInfoHolder applicationInfoHolder;
+    private RuntimeService runtimeService;
 
+    @Resource
+    private CommentService commentService;
 
-    public void processInstanceStart(String processDefinitionKey, Integer processDefinitionVersion) {
+    @Transactional
+    public ProcessInstanceStartResult start(String processDefinitionKey, Integer processDefinitionVersion,
+                                            String businessKey, Map<String, Object> variables, String startUserId) {
+
         String applicationCode = applicationInfoHolder.getApplicationCode();
 
+        if (variables == null) {
+            variables = new HashMap<>();
+        }
+
+        Authentication.setAuthenticatedUserId(startUserId);
+
+        ProcessInstance processInstance = null;
+
         if (processDefinitionVersion == null) {
-            ProcessInstance processInstance = runtimeService.startProcessInstanceByKeyAndTenantId(processDefinitionKey, "", null, applicationCode);
-            return;
+            processInstance = runtimeService.startProcessInstanceByKeyAndTenantId(processDefinitionKey, businessKey, variables, applicationCode);
         } else {
-//            DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
-//            ProcessDefinition definition = deploymentManager.findDeployedProcessDefinitionByKeyAndVersionAndTenantId(
-//                    processDefinitionKey, processDefinitionVersion, "");
             ProcessDefinition definition = repositoryService.createProcessDefinitionQuery()
                     .processDefinitionTenantId(applicationCode)
                     .processDefinitionKey(processDefinitionKey)
                     .processDefinitionVersion(processDefinitionVersion)
                     .singleResult();
 
-            if (definition != null) {
-                // inherit tenant_id from definition
-                ProcessInstance processInstance = runtimeService.startProcessInstanceById(definition.getId(), "", null);
+            if (definition == null) {
+                throw new BusinessException("bizExp.process.definition.not_found", processDefinitionKey, processDefinitionVersion);
             }
-            return;
+
+            // inherit tenant_id from definition
+            processInstance = runtimeService.startProcessInstanceById(definition.getId(), businessKey, variables);
         }
+
+        commentService.recordComment(commentService.createFromInstance(processInstance));
+
+        return ProcessInstanceStartResult.builder()
+                .processInstanceId(processInstance.getId())
+                .build();
     }
 
 }
