@@ -1,4 +1,4 @@
-package app.pooi.workflow.infrastructure.configuration;
+package app.pooi.workflow.interfaces.exceptionhandler;
 
 import app.pooi.basic.expection.BusinessException;
 import app.pooi.basic.rest.CommonResult;
@@ -21,7 +21,7 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class MvcExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Resource
     private MessageSource messageSource;
