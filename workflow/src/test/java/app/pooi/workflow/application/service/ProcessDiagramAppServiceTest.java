@@ -1,8 +1,9 @@
 package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
+import app.pooi.workflow.application.result.ProcessInstanceStartResult;
+import app.pooi.workflow.application.result.ProcessTimelineItemResult;
 import app.pooi.workflow.domain.model.workflow.comment.Comment;
-import app.pooi.workflow.domain.model.workflow.diagram.ProcessDiagramElement;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -33,10 +34,36 @@ class ProcessDiagramAppServiceTest {
     private ProcessDiagramAppService processDiagramAppService;
 
     @Resource
+    private ProcessInstanceStartAppService processInstanceStartAppService;
+
+    @Resource
     private RuntimeService runtimeService;
 
     @Resource
     private TaskService taskService;
+
+    @Test
+    @SneakyThrows
+    @Deployment(resources = {"processes/article-workflow2.bpmn20.xml"}, tenantId = TENANT_APP_1)
+    void queryProcessInstanceTimeLine() {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("author", "test@baeldung.com");
+        variables.put("url", "http://baeldung.com/dummy");
+
+        ProcessInstanceStartResult instanceStartResult = processInstanceStartAppService.start("articleReview2", null, "", variables, "starter");
+
+        List<ProcessTimelineItemResult> results = processDiagramAppService.queryProcessInstanceTimeLine(instanceStartResult.getProcessInstanceId());
+        Assertions.assertThat(results.size()).isEqualTo(5);
+
+    }
+
+    @Test
+    @SneakyThrows
+    @Deployment(resources = {"processes/article-workflow2.bpmn20.xml"}, tenantId = TENANT_APP_1)
+    void queryProcessDefinitionTimeLine() {
+        List<ProcessTimelineItemResult> results = processDiagramAppService.queryProcessDefinitionTimeLine("articleReview2", null);
+        Assertions.assertThat(results.size()).isEqualTo(4);
+    }
 
     @Test
     @SneakyThrows
@@ -45,7 +72,11 @@ class ProcessDiagramAppServiceTest {
         Map<String, Object> variables = new HashMap<>();
         variables.put("author", "test@baeldung.com");
         variables.put("url", "http://baeldung.com/dummy");
-        runtimeService.startProcessInstanceByKeyAndTenantId("articleReview", variables, TENANT_APP_1);
+//        runtimeService.startProcessInstanceByKeyAndTenantId("articleReview", variables, TENANT_APP_1);
+
+        processInstanceStartAppService.start("articleReview", null, "", variables, "starter");
+
+
         assertEquals(1, runtimeService.createProcessInstanceQuery().count());
         Task task = taskService.createTaskQuery()
                 .singleResult();
@@ -65,7 +96,7 @@ class ProcessDiagramAppServiceTest {
     @SneakyThrows
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
     void bfs() {
-        List<ProcessDiagramElement> flowElementEntities = processDiagramAppService.bfs("articleReview", null);
+        List<ProcessTimelineItemResult> flowElementEntities = processDiagramAppService.bfs("articleReview", null);
         Assertions.assertThat(flowElementEntities).hasSize(12);
     }
 
@@ -73,7 +104,7 @@ class ProcessDiagramAppServiceTest {
     @SneakyThrows
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
     void dfs() {
-        List<ProcessDiagramElement> flowElementEntities = processDiagramAppService.dfs("articleReview", null);
+        List<ProcessTimelineItemResult> flowElementEntities = processDiagramAppService.dfs("articleReview", null);
         Assertions.assertThat(flowElementEntities).hasSize(12);
     }
 
@@ -81,7 +112,7 @@ class ProcessDiagramAppServiceTest {
     @SneakyThrows
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
     void travel() {
-        List<ProcessDiagramElement> flowElementEntities = processDiagramAppService.travel("articleReview", null);
+        List<ProcessTimelineItemResult> flowElementEntities = processDiagramAppService.travel("articleReview", null);
         Assertions.assertThat(flowElementEntities).hasSize(12);
     }
 }

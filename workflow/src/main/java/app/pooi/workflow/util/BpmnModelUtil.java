@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
@@ -118,10 +119,12 @@ public class BpmnModelUtil {
     }
 
     public static void travel(@NonNull BpmnModel bpmnModel,
-                              @NonNull String startNodeId,
+                              String startNodeId,
                               String stopNodeId,
                               @NonNull Consumer<FlowElement> visitor) {
-
+        if (StringUtils.isEmpty(startNodeId)) {
+            startNodeId = findFirstStartEvent(bpmnModel).getId();
+        }
         travelCond(bpmnModel, startNodeId, stopNodeId, searchReachableSequenceFlows(bpmnModel, startNodeId), visitor);
     }
 
@@ -267,5 +270,11 @@ public class BpmnModelUtil {
                 .filter(e -> e instanceof SequenceFlow)
                 .map(e -> ((SequenceFlow) e))
                 .collect(Collectors.toSet());
+    }
+
+    public static List<FlowElement> getFlowElementsInOrder(@NonNull BpmnModel bpmnModel) {
+        var flowElementInOrder = new ArrayList<FlowElement>();
+        travel(bpmnModel, null, null, flowElementInOrder::add);
+        return flowElementInOrder;
     }
 }
