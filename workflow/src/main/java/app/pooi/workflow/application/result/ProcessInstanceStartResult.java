@@ -1,4 +1,4 @@
-package app.pooi.workflow.domain.result;
+package app.pooi.workflow.application.result;
 
 import lombok.Builder;
 import lombok.Getter;

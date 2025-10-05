@@ -31,7 +31,7 @@ public class CommentService {
     }
 
     public Comment createFromInstance(@NonNull ProcessInstance instance) {
-        Comment comment = new Comment("INSTANCE_START");
+        Comment comment = new Comment("START_INSTANCE");
         return commentConvert.updateFromInstance(comment, instance);
     }
 
