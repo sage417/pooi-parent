@@ -29,7 +29,7 @@ public class ProcessInstanceStartAppService {
 
     @Transactional
     public ProcessInstanceStartResult start(String processDefinitionKey, Integer processDefinitionVersion,
-                                            String businessKey, Map<String, Object> variables, String startUserId) {
+                                            String instanceName, String businessKey, Map<String, Object> variables, String startUserId) {
 
         String applicationCode = applicationInfoHolder.getApplicationCode();
 
@@ -40,7 +40,7 @@ public class ProcessInstanceStartAppService {
         Authentication.setAuthenticatedUserId(startUserId);
 
         ProcessInstance processInstance = processInstanceService.startInstance(processDefinitionKey,
-                processDefinitionVersion, businessKey, variables, applicationCode);
+                processDefinitionVersion, instanceName, businessKey, variables, applicationCode);
 
         commentService.recordComment(commentService.createFromInstance(processInstance));
 

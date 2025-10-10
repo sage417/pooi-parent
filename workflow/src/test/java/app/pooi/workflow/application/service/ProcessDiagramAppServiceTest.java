@@ -50,7 +50,7 @@ class ProcessDiagramAppServiceTest {
         variables.put("author", "test@baeldung.com");
         variables.put("url", "http://baeldung.com/dummy");
 
-        ProcessInstanceStartResult instanceStartResult = processInstanceStartAppService.start("articleReview2", null, "", variables, "starter");
+        ProcessInstanceStartResult instanceStartResult = processInstanceStartAppService.start("articleReview2", null, "", "", variables, "starter");
 
         List<ProcessTimelineItemResult> results = processDiagramAppService.queryProcessInstanceTimeLine(instanceStartResult.getProcessInstanceId());
         Assertions.assertThat(results.size()).isEqualTo(5);
@@ -74,7 +74,7 @@ class ProcessDiagramAppServiceTest {
         variables.put("url", "http://baeldung.com/dummy");
 //        runtimeService.startProcessInstanceByKeyAndTenantId("articleReview", variables, TENANT_APP_1);
 
-        processInstanceStartAppService.start("articleReview", null, "", variables, "starter");
+        processInstanceStartAppService.start("articleReview", null, "", "", variables, "starter");
 
 
         assertEquals(1, runtimeService.createProcessInstanceQuery().count());

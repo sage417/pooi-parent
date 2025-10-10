@@ -57,7 +57,7 @@ public class MockController {
     public CommonResult<Void> start() {
         this.applicationInfoHolder.setApplicationInfo(new ApplicationInfo().setApplicationCode("app1"));
 //        processDefinitionDeployApplication.deployResource("processes/article-workflow.bpmn20.xml", "articleReview", "test-process");
-        this.processInstanceStartApplication.start("articleReview", 1, "", null, "starter");
+        this.processInstanceStartApplication.start("articleReview", 1, "", "", null, "starter");
         return CommonResult.success(null);
     }
 

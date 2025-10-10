@@ -46,7 +46,7 @@ class ProcessInstanceStartAppServiceTest {
         variables.put("author", "test@baeldung.com");
         variables.put("url", "http://baeldung.com/dummy");
 
-        ProcessInstanceStartResult result = processInstanceStartAppService.start("articleReview", null, "", variables, "starter");
+        ProcessInstanceStartResult result = processInstanceStartAppService.start("articleReview", null, "", "", variables, "starter");
 
         ProcessInstance processInstance = runtimeService.createProcessInstanceQuery().processInstanceId(result.getProcessInstanceId()).singleResult();
 
