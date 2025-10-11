@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-public class UserStartProcessInstanceItemResult {
+public class UserFinishedProcessInstanceItemResult {
 
     private String processInstanceId;
 
@@ -17,7 +17,11 @@ public class UserStartProcessInstanceItemResult {
 
     private LocalDateTime processInstanceStartTime;
 
-    private String currentNodeNames;
+    private String lastFinishedTaskId;
+
+    private LocalDateTime lastFinishedTaskTime;
+
+    private String currentNodeName;
 
     private String currentTaskCandidates;
 

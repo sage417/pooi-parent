@@ -2,9 +2,10 @@ package app.pooi.workflow.application.service;
 
 import app.pooi.tenant.multitenancy.ApplicationInfoHolder;
 import app.pooi.workflow.application.converter.UserProcessInstanceItemResultMapper;
-import app.pooi.workflow.application.result.UserFinishProcessInstanceItemResult;
+import app.pooi.workflow.application.result.UserFinishedProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserStartProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserTodoProcessInstanceItemResult;
+import app.pooi.workflow.util.TaskEntityUtil;
 import com.google.common.collect.Ordering;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -17,10 +18,7 @@ import org.flowable.task.api.history.HistoricTaskInstance;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -64,9 +62,10 @@ public class UserProcessInstanceQueryAppService {
 
         return historicProcessInstances.stream()
                 .map(inst -> {
-                    var item = userProcessInstanceItemResultMapper.convert(inst);
+                    var item = userProcessInstanceItemResultMapper.convertStartResult(inst);
                     List<Task> tasks = taskMapByInstanceId.get(item.getProcessInstanceId());
-                    item.setCurrentNodeName(tasks.stream().map(Task::getName).collect(Collectors.joining(",")));
+                    item.setCurrentNodeNames(getCurrentNodeNames(tasks));
+                    item.setCurrentTaskCandidates(getTaskCandidates(tasks));
                     return item;
                 })
                 .toList();
@@ -91,16 +90,17 @@ public class UserProcessInstanceQueryAppService {
 
         return tasks.stream()
                 .map(task -> {
-                    var item = userProcessInstanceItemResultMapper.convert(task);
+                    var item = userProcessInstanceItemResultMapper.convertTodoResult(task);
                     var instanceId = processInstanceMapById.get(item.getProcessInstanceId());
-                    userProcessInstanceItemResultMapper.update(item, instanceId);
+                    userProcessInstanceItemResultMapper.updateTodoResult(item, instanceId);
                     return item;
                 })
                 .toList();
     }
 
-    public List<UserFinishProcessInstanceItemResult> queryUserFinishedProcessInstances(String userId, int pageNo, int pageSize) {
-        List<HistoricTaskInstance> historicTasks = historyService.createHistoricTaskInstanceQuery()
+    public List<UserFinishedProcessInstanceItemResult> queryUserFinishedProcessInstances(String userId, int pageNo, int pageSize) {
+        // TODO custom sql
+        var historicTasks = historyService.createHistoricTaskInstanceQuery()
                 .taskTenantId(applicationInfoHolder.getApplicationCode())
                 .taskAssignee(userId)
                 .finished()
@@ -119,18 +119,50 @@ public class UserProcessInstanceQueryAppService {
                 .processInstanceIds(instanceIds)
                 .list();
 
-        Map<String, List<HistoricTaskInstance>> taskGroupByInstanceId = historicTasks.stream().collect(Collectors.groupingBy(HistoricTaskInstance::getProcessInstanceId));
+        var historicTaskGroupByInstanceId = historicTasks.stream()
+                .collect(Collectors.groupingBy(HistoricTaskInstance::getProcessInstanceId));
+
+        // find unfinished instances
+        var unfinishedInstanceIds = historicProcessInstances.stream().filter(instance -> instance.getEndTime() == null)
+                .map(HistoricProcessInstance::getId)
+                .collect(Collectors.toSet());
+
+
+        Map<String, List<Task>> taskGroupByInstanceId = new HashMap<>();
+
+        if (!CollectionUtils.isEmpty(unfinishedInstanceIds)) {
+            var tasks = taskService.createTaskQuery()
+                    .taskTenantId(applicationInfoHolder.getApplicationCode())
+                    .processInstanceIdIn(unfinishedInstanceIds)
+                    .list();
+
+            taskGroupByInstanceId.putAll(tasks.stream()
+                    .collect(Collectors.groupingBy(Task::getProcessInstanceId)));
+        }
 
         return historicProcessInstances.stream()
                 .map(instance -> {
                     var itemResult = userProcessInstanceItemResultMapper.convertFinishResult(instance);
 
-                    var historicTaskInstances = taskGroupByInstanceId.get(instance.getId());
+                    var historicTaskInstances = historicTaskGroupByInstanceId.get(instance.getId());
                     Optional<HistoricTaskInstance> lastFinishTaskInstance = historicTaskInstances.stream()
                             .max(Ordering.natural().onResultOf(HistoricTaskInstance::getEndTime));
                     userProcessInstanceItemResultMapper.updateFinishResult(itemResult, lastFinishTaskInstance.orElse(null));
+
+                    List<Task> unfinishedTasks = taskGroupByInstanceId.get(instance.getId());
+                    itemResult.setCurrentNodeName(getCurrentNodeNames(unfinishedTasks));
+                    itemResult.setCurrentTaskCandidates(getTaskCandidates(unfinishedTasks));
                     return itemResult;
                 })
                 .toList();
+    }
+
+    private static String getTaskCandidates(List<Task> tasks) {
+        return CollectionUtils.emptyIfNull(tasks).stream().map(TaskEntityUtil::getAssigneeAndCandidates)
+                .flatMap(Collection::stream).distinct().collect(Collectors.joining(","));
+    }
+
+    private static String getCurrentNodeNames(List<Task> tasks) {
+        return CollectionUtils.emptyIfNull(tasks).stream().map(Task::getName).collect(Collectors.joining(","));
     }
 }

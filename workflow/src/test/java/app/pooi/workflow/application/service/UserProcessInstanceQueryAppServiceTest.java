@@ -2,7 +2,7 @@ package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
 import app.pooi.workflow.application.result.ProcessInstanceStartResult;
-import app.pooi.workflow.application.result.UserFinishProcessInstanceItemResult;
+import app.pooi.workflow.application.result.UserFinishedProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserStartProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserTodoProcessInstanceItemResult;
 import lombok.SneakyThrows;
@@ -81,7 +81,7 @@ class UserProcessInstanceQueryAppServiceTest {
         String taskId = todos.getFirst().getTaskId();
         userTaskOperationAppService.completeTask(taskId, variables);
 
-        List<UserFinishProcessInstanceItemResult> itemResults = userProcessInstanceQueryAppService.queryUserFinishedProcessInstances("assignee1", 1, 1);
+        List<UserFinishedProcessInstanceItemResult> itemResults = userProcessInstanceQueryAppService.queryUserFinishedProcessInstances("assignee1", 1, 1);
         Assertions.assertThat(itemResults.size()).isEqualTo(1);
     }
 }

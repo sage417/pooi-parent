@@ -1,6 +1,6 @@
 package app.pooi.workflow.application.converter;
 
-import app.pooi.workflow.application.result.UserFinishProcessInstanceItemResult;
+import app.pooi.workflow.application.result.UserFinishedProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserStartProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserTodoProcessInstanceItemResult;
 import org.flowable.engine.history.HistoricProcessInstance;
@@ -15,19 +15,25 @@ public interface UserProcessInstanceItemResultMapper {
 
     @Mapping(target = "processInstanceId", source = "id")
     @Mapping(target = "processInstanceName", source = "name")
-    @Mapping(target = "startTime", source = "startTime")
-    UserStartProcessInstanceItemResult convert(HistoricProcessInstance historicProcessInstance);
+    @Mapping(target = "processInstanceStartTime", source = "startTime")
+    UserStartProcessInstanceItemResult convertStartResult(HistoricProcessInstance historicProcessInstance);
 
     @Mapping(target = "taskId", source = "id")
-    @Mapping(target = "currentNodeName", source = "name")
-    UserTodoProcessInstanceItemResult convert(Task task);
+    @Mapping(target = "currentNodeNames", source = "name")
+    UserTodoProcessInstanceItemResult convertTodoResult(Task task);
 
     @Mapping(target = "processInstanceName", source = "name")
-    @Mapping(target = "startTime", source = "startTime")
-    UserTodoProcessInstanceItemResult update(@MappingTarget UserTodoProcessInstanceItemResult itemResult, HistoricProcessInstance instance);
+    @Mapping(target = "processInstanceStartTime", source = "startTime")
+    UserTodoProcessInstanceItemResult updateTodoResult(@MappingTarget UserTodoProcessInstanceItemResult itemResult, HistoricProcessInstance instance);
 
-    UserFinishProcessInstanceItemResult convertFinishResult(HistoricProcessInstance historicProcessInstance);
+    @Mapping(target = "processInstanceId", source = "id")
+    @Mapping(target = "processInstanceName", source = "name")
+    @Mapping(target = "processInstanceStartTime", source = "startTime")
+    UserFinishedProcessInstanceItemResult convertFinishResult(HistoricProcessInstance historicProcessInstance);
 
     @Mapping(target = "lastFinishedTaskId", source = "id")
-    UserFinishProcessInstanceItemResult updateFinishResult(@MappingTarget UserFinishProcessInstanceItemResult itemResult, HistoricTaskInstance historicTaskInstance);
+    @Mapping(target = "lastFinishedTaskTime", source = "endTime")
+    UserFinishedProcessInstanceItemResult updateFinishResult(@MappingTarget UserFinishedProcessInstanceItemResult itemResult, HistoricTaskInstance historicTaskInstance);
+
+
 }

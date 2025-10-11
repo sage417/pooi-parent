@@ -17,8 +17,8 @@ public class UserTodoProcessInstanceItemResult {
 
     private String processInstanceName;
 
-    private LocalDateTime startTime;
+    private LocalDateTime processInstanceStartTime;
 
-    private String currentNodeName;
+    private String currentNodeNames;
 
 }
