@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-public class UserFinishedProcessInstanceItemResult {
+public class UserCompletedProcessInstanceItemResult {
 
     private String processInstanceId;
 

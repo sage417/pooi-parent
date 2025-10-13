@@ -1,6 +1,6 @@
 package app.pooi.workflow.application.converter;
 
-import app.pooi.workflow.application.result.UserFinishedProcessInstanceItemResult;
+import app.pooi.workflow.application.result.UserCompletedProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserStartProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserTodoProcessInstanceItemResult;
 import org.flowable.engine.history.HistoricProcessInstance;
@@ -29,11 +29,11 @@ public interface UserProcessInstanceItemResultMapper {
     @Mapping(target = "processInstanceId", source = "id")
     @Mapping(target = "processInstanceName", source = "name")
     @Mapping(target = "processInstanceStartTime", source = "startTime")
-    UserFinishedProcessInstanceItemResult convertFinishResult(HistoricProcessInstance historicProcessInstance);
+    UserCompletedProcessInstanceItemResult convertFinishResult(HistoricProcessInstance historicProcessInstance);
 
     @Mapping(target = "lastFinishedTaskId", source = "id")
     @Mapping(target = "lastFinishedTaskTime", source = "endTime")
-    UserFinishedProcessInstanceItemResult updateFinishResult(@MappingTarget UserFinishedProcessInstanceItemResult itemResult, HistoricTaskInstance historicTaskInstance);
+    UserCompletedProcessInstanceItemResult updateFinishResult(@MappingTarget UserCompletedProcessInstanceItemResult itemResult, HistoricTaskInstance historicTaskInstance);
 
 
 }

@@ -2,7 +2,7 @@ package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.TenantInfoHolderExtension;
 import app.pooi.workflow.application.result.ProcessInstanceStartResult;
-import app.pooi.workflow.application.result.UserFinishedProcessInstanceItemResult;
+import app.pooi.workflow.application.result.UserCompletedProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserStartProcessInstanceItemResult;
 import app.pooi.workflow.application.result.UserTodoProcessInstanceItemResult;
 import lombok.SneakyThrows;
@@ -68,7 +68,7 @@ class UserProcessInstanceQueryAppServiceTest {
     @Test
     @SneakyThrows
     @Deployment(resources = {"processes/article-workflow.bpmn20.xml"}, tenantId = TENANT_APP_1)
-    void queryUserFinishedProcessInstances() {
+    void queryUserCompletedProcessInstances() {
         Map<String, Object> variables = new HashMap<>();
         variables.put("author", "test@baeldung.com");
         variables.put("url", "http://baeldung.com/dummy");
@@ -81,7 +81,7 @@ class UserProcessInstanceQueryAppServiceTest {
         String taskId = todos.getFirst().getTaskId();
         userTaskOperationAppService.completeTask(taskId, variables);
 
-        List<UserFinishedProcessInstanceItemResult> itemResults = userProcessInstanceQueryAppService.queryUserFinishedProcessInstances("assignee1", 1, 1);
+        List<UserCompletedProcessInstanceItemResult> itemResults = userProcessInstanceQueryAppService.queryUserCompletedProcessInstances("assignee1", 1, 1);
         Assertions.assertThat(itemResults.size()).isEqualTo(1);
     }
 }
