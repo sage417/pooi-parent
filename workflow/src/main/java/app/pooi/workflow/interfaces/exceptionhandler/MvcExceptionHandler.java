@@ -36,9 +36,9 @@ public class MvcExceptionHandler extends ResponseEntityExceptionHandler {
             Locale locale
     ) {
         String errorMessage = messageSource.getMessage(
-                ex.getCode(),
+                ex.getMessageCode(),
                 ex.getArgs(),
-                ex.getCode(), // default message when missing
+                ex.getMessageCode(), // default message when missing
                 locale
         );
 
