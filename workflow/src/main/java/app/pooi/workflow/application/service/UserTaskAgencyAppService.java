@@ -2,13 +2,16 @@ package app.pooi.workflow.application.service;
 
 import app.pooi.workflow.domain.model.enums.TaskAgencyType;
 import app.pooi.workflow.domain.model.workflow.agency.*;
+import app.pooi.workflow.domain.repository.TaskAgencyHistoryRepository;
 import app.pooi.workflow.domain.repository.TaskAgencyProfileRepository;
+import app.pooi.workflow.util.TaskEntityUtil;
 import app.pooi.workflow.util.TravelNode;
 import com.google.common.collect.Sets;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -24,22 +27,38 @@ public class UserTaskAgencyAppService {
     @Resource
     private TaskAgencyProfileRepository taskAgencyProfileRepository;
 
+    @Resource
+    private TaskAgencyHistoryRepository taskAgencyHistoryRepository;
 
-    public TaskDelegateResult matchTaskDelegate(ExecutionEntity execution, Set<String> taskAssignees, String tenantId) {
+    public TaskDelegateResult matchTaskDelegate(ExecutionEntity execution, TaskEntity task, boolean saveHistory) {
 
         List<TaskAgencyProfile> agencyProfiles = this.taskAgencyProfileRepository
-                .selectValidByProcessDefinitionKeyAndTenantId(execution.getProcessDefinitionKey(), tenantId);
+                .selectValidByProcessDefinitionKeyAndTenantId(execution.getProcessDefinitionKey(), task.getTenantId());
 
         if (CollectionUtils.isEmpty(agencyProfiles)) {
             return TaskDelegateResult.NO_NEED_CHANGE_ASSIGNEE_RESULT;
         }
 
+        Set<String> taskAssignees = TaskEntityUtil.getAssigneeAndCandidates(task);
         // 1) flowable calculate candidates
         TaskApprovalNode taskApprovalRelation = generateTaskApprovalNode(taskAssignees);
         // 2) agency profile tree building
         TaskDelegateNode taskDelegateRelation = generateTaskDelegateRelation(agencyProfiles);
         // 3) replace candidates after delegate and search delegate path
         TaskApprovalNode taskApprovalRelationAfterDelegate = calculateApprovalDelegateRelation(taskApprovalRelation, taskDelegateRelation);
+
+        if (saveHistory) {
+            TaskAgencyHistory taskAgencyHistory = TaskAgencyHistory.builder()
+                    .tenantId(task.getTenantId())
+                    .processInstanceId(task.getProcessInstanceId())
+                    .processDefinitionKey(execution.getProcessDefinitionKey())
+                    .taskDefinitionKey(task.getTaskDefinitionKey())
+                    .taskId(task.getId())
+                    .type(TaskAgencyType.DELEGATE.getValue())
+                    .delegateDetails(taskApprovalRelationAfterDelegate)
+                    .build();
+            this.taskAgencyHistoryRepository.save(taskAgencyHistory);
+        }
 
         Set<String> assigneeAfterDelegate = taskApprovalRelationAfterDelegate.getChildren().stream()
                 .map(TravelNode::getValue).collect(Collectors.toSet());
@@ -64,13 +83,14 @@ public class UserTaskAgencyAppService {
                     .filter(delegateNode -> delegateNode.getValue().equals(child.getValue()))
                     .findFirst();
             if (optionalTaskDelegateNode.isEmpty()) {
+                // just copy
                 newApprovalNode.addChild(new TaskApprovalNode(child.getValue()));
                 continue;
             }
             // delegate root -> approval
             TaskDelegateNode matchDelegateNode = optionalTaskDelegateNode.get();
             // delegate root -> approval -> leaf node
-            List<List<TaskDelegateNode>> leafNodePaths = matchDelegateNode.getLeafNodes();
+            List<List<TaskDelegateNode>> leafNodePaths = matchDelegateNode.searchLeafNodes();
 
             for (List<TaskDelegateNode> leafNodePath : leafNodePaths) {
                 //

@@ -1,11 +1,18 @@
 package app.pooi.workflow.domain.model.workflow.agency;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Data
 public class TaskAgencyHistory implements Serializable {
 
@@ -38,19 +45,19 @@ public class TaskAgencyHistory implements Serializable {
     private String taskId;
 
     /**
-     * 委托类型 0:无效 1:全权委托 2:协助审批
+     * 任务节点id
+     */
+    private String taskDefinitionKey;
+
+    /**
+     * 委托类型 0:无效 1:代理 2:共享
      */
     private Integer type;
 
     /**
-     * 委托人
+     * 委托详情
      */
-    private String delegate;
-
-    /**
-     * 代理人
-     */
-    private String agents;
+    private TaskApprovalNode delegateDetails;
 
     /**
      * create_time
@@ -61,6 +68,5 @@ public class TaskAgencyHistory implements Serializable {
      * update_time
      */
     private LocalDateTime updateTime;
-
 
 }

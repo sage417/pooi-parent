@@ -226,7 +226,7 @@ public class TravelNode<T extends TravelNode<T>> {
         return findWithPathDFSIterative((T) this, searchValue);
     }
 
-    public List<List<T>> getLeafNodes() {
+    public List<List<T>> searchLeafNodes() {
         return getAllLeafPaths((T) this);
     }
 

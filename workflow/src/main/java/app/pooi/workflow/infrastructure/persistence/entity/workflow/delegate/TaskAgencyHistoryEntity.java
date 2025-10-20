@@ -40,24 +40,24 @@ public class TaskAgencyHistoryEntity implements Serializable {
     private String processInstanceId;
 
     /**
+     * 任务节点id
+     */
+    private String taskDefinitionKey;
+
+    /**
      * 任务id
      */
     private String taskId;
 
     /**
-     * 委托类型 0:无效 1:全权委托 2:协助审批
+     * 委托类型 0:无效 1:代理 2:共享
      */
     private Integer type;
 
     /**
      * 委托人
      */
-    private String delegate;
-
-    /**
-     * 代理人
-     */
-    private String agents;
+    private String delegateDetails;
 
     /**
      * create_time

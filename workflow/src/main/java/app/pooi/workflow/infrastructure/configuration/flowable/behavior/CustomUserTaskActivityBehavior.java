@@ -63,7 +63,7 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
     private final FlowableCustomProperties flowableCustomProperties;
 
-    private final UserTaskAgencyAppService taskAgencyApplication;
+    private final UserTaskAgencyAppService taskAgencyAppService;
 
     private final CommentService commentService;
 
@@ -76,7 +76,7 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
     ) {
         super(userTask);
         this.flowableCustomProperties = flowableCustomProperties;
-        this.taskAgencyApplication = taskAgencyAppService;
+        this.taskAgencyAppService = taskAgencyAppService;
         this.userTaskAutoCompleteAppService = userTaskAutoCompleteAppService;
         this.commentService = commentService;
     }
@@ -216,8 +216,7 @@ public class CustomUserTaskActivityBehavior extends UserTaskActivityBehavior {
 
         TaskDelegateResult delegateResult;
         if (BooleanUtils.isTrue(flowableCustomProperties.getApprovalDelegateEnable())
-                && (delegateResult = taskAgencyApplication.matchTaskDelegate(execution,
-                TaskEntityUtil.getAssigneeAndCandidates(task), task.getTenantId())).isMatchDelegateProfile()) {
+                && (delegateResult = taskAgencyAppService.matchTaskDelegate(execution, task, true)).isMatchDelegateProfile()) {
 
             Set<String> assigneeAfterDelegate = delegateResult.getAssigneeAfterDelegate().getChildren().stream()
                     .map(TravelNode::getValue).collect(Collectors.toSet());
