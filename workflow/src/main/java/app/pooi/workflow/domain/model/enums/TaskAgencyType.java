@@ -9,6 +9,7 @@ public enum TaskAgencyType implements IEnum<Integer> {
     NONE(0),
     DELEGATE(1),
     SHARE(2),
+    TURN(3),
     ;
 
     private final int value;
